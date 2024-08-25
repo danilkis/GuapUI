@@ -3,6 +3,12 @@ package org.lightwork.guapui.models
 import kotlinx.serialization.Serializable
 
 @Serializable
+data class Day(
+    val dayName: String,
+    val lessons: List<Lesson>
+)
+
+@Serializable
 data class ApiLesson(
     val ItemId: Int?,
     val Week: Int?,
@@ -28,5 +34,6 @@ data class Lesson(
     var room: String = "101",
     var time: String = "10:10 - 11:40",
     var type: String = "Лекция",
-    var number: Int = 1
+    var number: Int = 1,
+    var building: String
 )

@@ -1,4 +1,4 @@
-package com.example.guap02.screen.element
+package org.lightwork.guapui.elements
 
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.padding
@@ -20,13 +20,16 @@ import org.lightwork.guapui.models.Group
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
-fun ExpandableWeekField(
-    items: List<String>,
+fun ExpandableGroupField(
+    items: List<Group>,
     label: String,
-    onItemSelected: (String) -> Unit
+    onItemSelected: (Int) -> Unit
 ) {
     var isExpanded by remember { mutableStateOf(false) }
-    var selectedValue by remember { mutableStateOf(items[0]) }
+    var selectedValue by remember { mutableStateOf(items[0].Name) }
+    var searchQuery by remember { mutableStateOf("") }
+    val filteredItems = items.filter { it.Name.contains(searchQuery, ignoreCase = true) }
+
     ExposedDropdownMenuBox(
         expanded = isExpanded,
         onExpandedChange = { isExpanded = it }
@@ -50,11 +53,24 @@ fun ExpandableWeekField(
         ExposedDropdownMenu(
             expanded = isExpanded,
             onDismissRequest = { isExpanded = false }) {
-            items.forEach { group ->
-                DropdownMenuItem(onClick = {
-                    onItemSelected(group)
-                    selectedValue = group
-                }, text = { Text(group) })
+
+            TextField(
+                value = searchQuery,
+                onValueChange = { searchQuery = it },
+                modifier = Modifier
+                    .padding(8.dp),
+                label = { Text("Найти") }
+            )
+
+            filteredItems.forEach { group ->
+                DropdownMenuItem(
+                    onClick = {
+                        selectedValue = group.Name
+                        onItemSelected(group.ItemId)
+                        isExpanded = false
+                    },
+                    text = { Text(group.Name) }
+                )
             }
         }
     }

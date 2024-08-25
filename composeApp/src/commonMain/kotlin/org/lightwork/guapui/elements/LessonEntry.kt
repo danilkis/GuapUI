@@ -1,15 +1,12 @@
 package org.lightwork.guapui.elements
 
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Surface
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Build
+import androidx.compose.material.icons.rounded.Home
 import androidx.compose.material.icons.rounded.Person
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.HorizontalDivider
@@ -25,22 +22,11 @@ import androidx.compose.ui.unit.dp
 import org.lightwork.guapui.models.Lesson
 
 @Composable
-fun LessonEntry(
-    lesson: Lesson = Lesson(
-        breakTime = "10 минут",
-        showBreak = true,
-        lessonName = "Математика",
-        teachers = listOf("Иванов Иван Иванович", "Петров Петр Петрович"),
-        room = "101",
-        time = "10:10 - 11:40",
-        type = "Лекция",
-        number = 1
-
-    )
-) {
+fun LessonEntry(lesson: Lesson) {
     Surface {
         Column(Modifier.fillMaxWidth().padding(8.dp)) {
 
+            /*
             if (lesson.showBreak) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     HorizontalDivider(
@@ -64,6 +50,7 @@ fun LessonEntry(
                     )
                 }
             }
+            */
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                 Box(
                     Modifier
@@ -114,8 +101,20 @@ fun LessonEntry(
                                 contentDescription = "Teacher icon",
                                 tint = MaterialTheme.colorScheme.tertiary
                             )
-                        }, onClick = {}, label = { Text(teacher) })
+                        }, modifier = Modifier.padding(4.dp), onClick = {}, label = { Text(teacher) })
                     }
+                    AssistChip(leadingIcon = {
+                        Icon(
+                            imageVector = Icons.Rounded.Home,
+                            contentDescription = "Home icon",
+                            tint = MaterialTheme.colorScheme.tertiary
+                        )
+                    }, modifier = Modifier.padding(4.dp), onClick = {}, label = { Text(lesson.building) })
+                    HorizontalDivider(
+                        Modifier.weight(1f),
+                        thickness = 1.dp,
+                        color = MaterialTheme.colorScheme.primaryContainer
+                    )
                 }
             }
         }

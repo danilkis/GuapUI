@@ -39,34 +39,45 @@ kotlin {
     }
     
     jvm("desktop")
-    
+
     sourceSets {
-        val desktopMain by getting
-        
-        androidMain.dependencies {
-            implementation(compose.preview)
-            implementation(libs.androidx.activity.compose)
+        val commonMain by getting {
+            dependencies {
+                implementation(compose.runtime)
+                implementation(compose.foundation)
+                implementation(compose.material)
+                implementation(compose.ui)
+                implementation(compose.components.resources)
+                implementation(compose.components.uiToolingPreview)
+                implementation(libs.androidx.lifecycle.viewmodel)
+                implementation(libs.androidx.lifecycle.runtime.compose)
+                implementation(projects.shared)
+                implementation(compose.material3)
+                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.1")
+            }
         }
-        commonMain.dependencies {
-            implementation(compose.runtime)
-            implementation(compose.foundation)
-            implementation(compose.material)
-            implementation(compose.ui)
-            implementation(compose.components.resources)
-            implementation(compose.components.uiToolingPreview)
-            implementation(libs.androidx.lifecycle.viewmodel)
-            implementation(libs.androidx.lifecycle.runtime.compose)
-            implementation(projects.shared)
-            implementation(compose.material3)
-            implementation(libs.ktor.client.core)
-            //implementation(libs.ktor.client.okhttp)
-            implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.1")
-            implementation("io.ktor:ktor-client-js-wasm-js:3.0.0-beta-2")
-            implementation("io.ktor:ktor-http-wasm-js:3.0.0-beta-2")
+
+        val wasmJsMain by getting {
+            dependencies {
+                implementation("io.ktor:ktor-client-js-wasm-js:3.0.0-beta-2")
+                implementation("io.ktor:ktor-http-wasm-js:3.0.0-beta-2")
+            }
         }
-        desktopMain.dependencies {
-            implementation(compose.desktop.currentOs)
-            implementation(libs.kotlinx.coroutines.swing)
+
+        val androidMain by getting {
+            dependencies {
+                implementation(compose.preview)
+                implementation(libs.androidx.activity.compose)
+                implementation(libs.ktor.client.okhttp) // This will be ignored in WASM
+            }
+        }
+
+        val desktopMain by getting {
+            dependencies {
+                implementation(compose.desktop.currentOs)
+                implementation(libs.kotlinx.coroutines.swing)
+                implementation(libs.ktor.client.okhttp) // This will be ignored in WASM
+            }
         }
     }
 }
