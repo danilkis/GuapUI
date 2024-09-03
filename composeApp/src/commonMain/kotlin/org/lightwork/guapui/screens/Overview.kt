@@ -2,6 +2,8 @@ import androidx.compose.animation.*
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.*
@@ -14,12 +16,13 @@ import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.CircularProgressIndicator
+import androidx.compose.material.Text
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.unit.dp
 import com.example.guap02.screen.element.ExpandableWeekField
+import guapui.composeapp.generated.resources.Res
 import org.lightwork.guapui.elements.DayCard
 import org.lightwork.guapui.elements.ExpandableGroupField
 import org.lightwork.guapui.functions.fetchGroups
@@ -29,9 +32,29 @@ import org.lightwork.guapui.models.Group
 import kotlinx.serialization.Serializable
 import org.lightwork.guapui.functions.fetchWeekInfo
 import org.lightwork.guapui.models.WeekInfo
-
+import androidx.compose.animation.core.*
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.key.Key.Companion.R
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.unit.dp
+import guapui.composeapp.generated.resources.Guap_logo
+import guapui.composeapp.generated.resources.compose_multiplatform
+import org.jetbrains.compose.resources.painterResource
 
 fun Boolean.toInt() = if (this) 1 else 2
+
+
 
 @Composable
 fun Overview() {
@@ -86,7 +109,60 @@ fun Overview() {
         }
     }
 
-    Column {
+    Column(Modifier.background(MaterialTheme.colorScheme.background)) {
+
+        // Splash screen visibility
+        AnimatedVisibility(
+            visible = groups == null || weekInfo == null,
+            enter = fadeIn(animationSpec = tween(500)),
+            exit = fadeOut(animationSpec = tween(500))
+        ) {
+            val infiniteTransition = rememberInfiniteTransition()
+
+            // Animation values for the pulsating logo
+            val scale by infiniteTransition.animateFloat(
+                initialValue = 0.9f,
+                targetValue = 1.1f,
+                animationSpec = infiniteRepeatable(
+                    animation = tween(1000),
+                    repeatMode = RepeatMode.Reverse
+                )
+            )
+
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(MaterialTheme.colorScheme.background),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    // Guap Logo with pulsating effect
+//                    Image(
+//                        painter = painterResource(Res.drawable.Guap_logo), // Replace with your image resource
+//                        contentDescription = "GUAP Logo",
+//                        modifier = Modifier
+//                            .size(120.dp)
+//                            .scale(scale),
+//                        contentScale = ContentScale.Crop
+//                    )
+//                    Spacer(modifier = Modifier.height(24.dp))
+
+                    // Horizontal progress bar with spinning effect
+                    LinearProgressIndicator(
+                        modifier = Modifier
+                            .width(350.dp)
+                            .height(20.dp)
+                            .padding(8.dp),
+                        color = Color.White
+                    )
+                }
+            }
+        }
+
+        // Main content visibility
         AnimatedVisibility(
             visible = groups != null && weekInfo != null,
             enter = slideInHorizontally(animationSpec = tween(300)) + fadeIn(),
@@ -122,7 +198,7 @@ fun Overview() {
                     .height(60.dp),
                 contentAlignment = Alignment.Center
             ) {
-                CircularProgressIndicator(
+                androidx.compose.material.CircularProgressIndicator(
                     modifier = Modifier
                         .size(48.dp)
                         .padding(8.dp)
@@ -143,7 +219,7 @@ fun Overview() {
                 exit = fadeOut(animationSpec = tween(durationMillis = 300))
             ) {
                 LazyVerticalStaggeredGrid(
-                    columns = StaggeredGridCells.Adaptive(400.dp), // Use StaggeredGridCells.Adaptive for staggered layout
+                    columns = StaggeredGridCells.Adaptive(400.dp),
                     modifier = Modifier.alpha(alpha)
                 ) {
                     items(lessons ?: emptyList()) { day ->

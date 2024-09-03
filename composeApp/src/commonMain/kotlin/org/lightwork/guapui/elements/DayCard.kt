@@ -12,12 +12,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.unit.dp
+import org.lightwork.guapui.LessonEntry
 import org.lightwork.guapui.models.Lesson
 
 @Composable
 fun DayCard(lessons: List<Lesson>, label: String) {
-    Card(Modifier.padding(8.dp).shadow(4.dp, shape = MaterialTheme.shapes.medium)) {
-        Column(Modifier.fillMaxWidth()) {
+    Card(Modifier.padding(8.dp).shadow(4.dp, shape = MaterialTheme.shapes.medium).background(MaterialTheme.colorScheme.surfaceContainer)) {
+        Column(Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surfaceContainer)) {
             Row(Modifier.background(MaterialTheme.colorScheme.primary).fillMaxWidth().padding(8.dp)) {
                 Text(label, style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onPrimary)
             }

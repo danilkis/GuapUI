@@ -27,7 +27,7 @@ data class ApiLesson(
 
 @Serializable
 data class Lesson(
-    var breakTime: String = "10 минут",
+    var breakTime: String? = null,
     var showBreak: Boolean = true,
     var lessonName: String = "Математика",
     var teachers: List<String> = listOf("Иванов Иван Иванович", "Петров Петр Петрович"),
