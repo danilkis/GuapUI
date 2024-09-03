@@ -51,6 +51,7 @@ import androidx.compose.ui.unit.dp
 import guapui.composeapp.generated.resources.Guap_logo
 import guapui.composeapp.generated.resources.compose_multiplatform
 import org.jetbrains.compose.resources.painterResource
+import org.lightwork.guapui.getPlatform
 
 fun Boolean.toInt() = if (this) 1 else 2
 
@@ -139,6 +140,10 @@ fun Overview() {
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center
                 ) {
+                    val platform = getPlatform()
+
+                    Text(platform.name)
+
                     // Guap Logo with pulsating effect
 //                    Image(
 //                        painter = painterResource(Res.drawable.Guap_logo), // Replace with your image resource

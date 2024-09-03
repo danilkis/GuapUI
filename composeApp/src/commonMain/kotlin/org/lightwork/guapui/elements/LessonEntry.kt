@@ -126,7 +126,6 @@ fun LessonEntry(lesson: Lesson) {
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(vertical = 4.dp)
                         ) {
                             HorizontalDivider(
                                 Modifier
