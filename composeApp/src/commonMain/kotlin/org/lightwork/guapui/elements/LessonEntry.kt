@@ -26,29 +26,70 @@ fun LessonEntry(lesson: Lesson) {
     Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(8.dp)
+            .padding(top = 2.dp, start = 4.dp, end = 4.dp)
             .background(MaterialTheme.colorScheme.surfaceContainer)
     ) {
         Column(Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surfaceContainer)) {
             Row(
-                Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surfaceContainer),
+                Modifier
+                    .fillMaxWidth()
+                    .background(MaterialTheme.colorScheme.surfaceContainer),
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                // Display CircularProgressIndicator if donePercentage is available, otherwise show the lesson number
                 Box(
                     modifier = Modifier
                         .background(MaterialTheme.colorScheme.surfaceContainer)
                         .padding(4.dp)
                         .padding(start = 8.dp, end = 8.dp)
-                        .size(24.dp)
-                        .border(1.dp, MaterialTheme.colorScheme.primary, RoundedCornerShape(99.dp)),
+                        .size(24.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(
-                        text = lesson.number.toString(),
-                        style = MaterialTheme.typography.labelLarge,
-                        color = MaterialTheme.colorScheme.primary
-                    )
+                    if (lesson.donePercentage != null) {
+                        val progress = (lesson.donePercentage ?: 100) / 100f
+                        Box(
+                            contentAlignment = Alignment.Center, // Ensures all children are centered
+                            modifier = Modifier.size(24.dp)
+                        ) {
+                            // Background progress (remaining percentage)
+                            CircularProgressIndicator(
+                                color = MaterialTheme.colorScheme.onPrimary, // Color for the remaining percentage
+                                strokeWidth = 2.dp,
+                                modifier = Modifier.size(24.dp),
+                                progress = 1f // Full circle
+                            )
+                            // Foreground progress (done percentage)
+                            CircularProgressIndicator(
+                                color = MaterialTheme.colorScheme.primary, // Color for the done percentage
+                                strokeWidth = 2.dp,
+                                modifier = Modifier.size(24.dp),
+                                progress = progress // Actual progress
+                            )
+                            // Text in the center showing the percentage
+                            Text(
+                                text = lesson.number.toString(),
+                                style = MaterialTheme.typography.labelLarge,
+                                color = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.align(Alignment.Center) // Explicitly ensure the text is centered
+                            )
+                        }
+                    } else {
+                        Box(
+                            modifier = Modifier
+                                .size(24.dp)
+                                .border(2.dp, MaterialTheme.colorScheme.primary, RoundedCornerShape(99.dp)),
+                            contentAlignment = Alignment.Center // Ensures text is centered in the circle
+                        ) {
+                            Text(
+                                text = lesson.number.toString(),
+                                style = MaterialTheme.typography.labelLarge,
+                                color = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.align(Alignment.Center) // Explicitly ensure the text is centered
+                            )
+                        }
+                    }
                 }
+
                 Column(
                     modifier = Modifier
                         .background(MaterialTheme.colorScheme.surfaceContainer)
@@ -56,11 +97,31 @@ fun LessonEntry(lesson: Lesson) {
                         .background(MaterialTheme.colorScheme.surfaceContainer)
                         .fillMaxWidth()
                 ) {
-                    Text(
-                        text = lesson.time,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+                    if (lesson.remainingTime != null)
+                    {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(bottom = 4.dp), // Add padding to separate time from the next content
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = lesson.time,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            lesson.remainingTime?.let {
+                                Text(
+                                    text = it,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.error,
+                                    modifier = Modifier.weight(1f),
+                                    textAlign = TextAlign.End
+                                )
+                            }
+                        }
+                    }
                     Text(
                         text = lesson.lessonName,
                         style = MaterialTheme.typography.bodyLarge,
@@ -76,7 +137,7 @@ fun LessonEntry(lesson: Lesson) {
                     FlowRow(
                         modifier = Modifier.fillMaxWidth(),
                         verticalArrangement = Arrangement.spacedBy(4.dp),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
                         lesson.teachers.forEach { teacher ->
                             AssistChip(
@@ -125,7 +186,7 @@ fun LessonEntry(lesson: Lesson) {
                     if (lesson.showBreak && lesson.breakTime != null) {
                         Box(
                             modifier = Modifier
-                                .fillMaxWidth()
+                                .fillMaxWidth() // Reduce padding at the bottom
                         ) {
                             HorizontalDivider(
                                 Modifier
@@ -140,7 +201,8 @@ fun LessonEntry(lesson: Lesson) {
                                 color = MaterialTheme.colorScheme.primary,
                                 modifier = Modifier
                                     .align(Alignment.Center)
-                                    .padding(horizontal = 8.dp) // Optional: Add some padding around the text
+                                    .padding(horizontal = 8.dp)
+                                    .background(MaterialTheme.colorScheme.surfaceContainer)
                             )
                         }
                     }

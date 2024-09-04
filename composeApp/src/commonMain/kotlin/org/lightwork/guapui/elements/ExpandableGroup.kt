@@ -6,8 +6,25 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.input.key.*
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.unit.dp
+import org.lightwork.guapui.Platform
 import org.lightwork.guapui.models.Group
+
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
@@ -17,42 +34,45 @@ fun ExpandableGroupField(
     onItemSelected: (Int) -> Unit
 ) {
     var isExpanded by remember { mutableStateOf(false) }
-    var selectedValue by remember { mutableStateOf("") }
+    var selectedValue by remember { mutableStateOf(items[0].Name) }
     var searchQuery by remember { mutableStateOf("") }
-
     val filteredItems = items.filter { it.Name.contains(searchQuery, ignoreCase = true) }
 
     ExposedDropdownMenuBox(
         expanded = isExpanded,
-        onExpandedChange = { isExpanded = !isExpanded } // Toggle expanded state
+        onExpandedChange = { isExpanded = it }
     ) {
         TextField(
-            readOnly = false, // Allow user to type in the field
-            label = { Text(label) },
-            value = searchQuery,
-            onValueChange = {
-                searchQuery = it
-                isExpanded = true // Automatically expand the dropdown when typing
+            label = {
+                Text(label)
             },
+            value = selectedValue,
+            onValueChange = { selectedValue = it },
             modifier = Modifier
                 .focusable(true)
                 .widthIn(max = 200.dp)
                 .menuAnchor()
                 .padding(8.dp),
+            readOnly = true,
             trailingIcon = {
                 ExposedDropdownMenuDefaults.TrailingIcon(expanded = isExpanded)
-            },
-            colors = ExposedDropdownMenuDefaults.textFieldColors()
+            }
         )
-
         ExposedDropdownMenu(
             expanded = isExpanded,
             onDismissRequest = { isExpanded = false }) {
 
+            TextField(
+                value = searchQuery,
+                onValueChange = { searchQuery = it },
+                modifier = Modifier
+                    .padding(8.dp),
+                label = { Text("Найти") }
+            )
+
             filteredItems.forEach { group ->
                 DropdownMenuItem(
                     onClick = {
-                        searchQuery = group.Name
                         selectedValue = group.Name
                         onItemSelected(group.ItemId)
                         isExpanded = false

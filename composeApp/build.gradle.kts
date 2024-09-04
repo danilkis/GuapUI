@@ -54,6 +54,8 @@ kotlin {
                 implementation(projects.shared)
                 implementation(compose.material3)
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.1")
+                implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.6.1")
+                implementation("org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-compose:2.8.0")
             }
         }
 
@@ -117,6 +119,9 @@ android {
     dependencies {
         debugImplementation(compose.uiTooling)
     }
+}
+dependencies {
+    implementation(libs.places)
 }
 
 compose.desktop {

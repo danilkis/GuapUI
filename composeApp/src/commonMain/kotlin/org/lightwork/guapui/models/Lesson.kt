@@ -35,5 +35,7 @@ data class Lesson(
     var time: String = "10:10 - 11:40",
     var type: String = "Лекция",
     var number: Int = 1,
-    var building: String
+    var building: String,
+    var remainingTime: String? = null,
+    var donePercentage: Int? = null 
 )

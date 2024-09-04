@@ -1,114 +1,62 @@
+package org.lightwork.guapui.view
+
 import androidx.compose.animation.*
-import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
+
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
-import androidx.compose.foundation.lazy.staggeredgrid.items
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.material.CircularProgressIndicator
-import androidx.compose.material.Text
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.unit.dp
 import com.example.guap02.screen.element.ExpandableWeekField
-import guapui.composeapp.generated.resources.Res
 import org.lightwork.guapui.elements.DayCard
 import org.lightwork.guapui.elements.ExpandableGroupField
-import org.lightwork.guapui.functions.fetchGroups
-import org.lightwork.guapui.functions.fetchLessons
-import org.lightwork.guapui.models.Day
-import org.lightwork.guapui.models.Group
-import kotlinx.serialization.Serializable
-import org.lightwork.guapui.functions.fetchWeekInfo
-import org.lightwork.guapui.models.WeekInfo
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.foundation.lazy.staggeredgrid.items
+import androidx.compose.material.DropdownMenu
+import androidx.compose.material.DropdownMenuItem
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.runtime.*
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Text
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.rotate
-import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.key.Key.Companion.R
+import androidx.compose.runtime.collectAsState
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.unit.DpOffset
+import androidx.lifecycle.viewmodel.compose.viewModel
 import guapui.composeapp.generated.resources.Guap_logo
-import guapui.composeapp.generated.resources.compose_multiplatform
+import guapui.composeapp.generated.resources.Res
 import org.jetbrains.compose.resources.painterResource
-import org.lightwork.guapui.getPlatform
+import org.lightwork.guapui.viewmodel.ScheduleViewModel
 
 fun Boolean.toInt() = if (this) 1 else 2
 
 
-
 @Composable
-fun Overview() {
-    var lessons by remember { mutableStateOf<List<Day>?>(null) }
-    var groups by remember { mutableStateOf<List<Group>?>(null) }
-    var selectedGroupId by remember { mutableStateOf(0) }
-    var selectedWeekType by remember { mutableStateOf("Авто") }
-    var weekInfo by remember { mutableStateOf<WeekInfo?>(null) }
-    var isLoading by remember { mutableStateOf(false) }
+fun Overview(viewModel: ScheduleViewModel = viewModel { ScheduleViewModel() }) {
+
+    val groups by viewModel.groups.collectAsState()
+    val weekInfo by viewModel.weekInfo.collectAsState()
+    val lessons by viewModel.lessons.collectAsState()
+    val isLoading by viewModel.isLoading.collectAsState()
 
     val days = listOf("Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота", "Воскресенье", "Авто")
-    val weekTypes = listOf("Числитель", "Знаменатель", "Авто")
+    val weekTypes = listOf("Авто", "Числитель", "Знаменатель")
     val scrollFilterState = rememberScrollState()
-
-    // Load groups data
-    LaunchedEffect(Unit) {
-        try {
-            groups = fetchGroups()
-        } catch (e: Exception) {
-            println("Error fetching groups: ${e.message}")
-        }
-    }
-
-    // Load week info data
-    LaunchedEffect(Unit) {
-        try {
-            weekInfo = fetchWeekInfo()
-            println("Week info fetched: $weekInfo")
-        } catch (e: Exception) {
-            println("Error fetching week info: ${e.message}")
-        }
-    }
-
-    // Update lessons when selectedGroupId or weekInfo changes
-    LaunchedEffect(selectedGroupId, selectedWeekType, weekInfo) {
-        if (selectedGroupId != 0 && weekInfo != null) {
-            isLoading = true
-            try {
-                val weekNumber = when (selectedWeekType) {
-                    "Числитель" -> 1
-                    "Знаменатель" -> 2
-                    "Авто" -> weekInfo!!.IsWeekOdd.toInt()
-                    else -> 1
-                }
-                lessons = fetchLessons(selectedGroupId, weekNumber)
-                println("Lessons fetched for group $selectedGroupId and week $weekNumber")
-            } catch (e: Exception) {
-                println("Error fetching lessons: ${e.message}")
-            } finally {
-                isLoading = false
-            }
-        }
-    }
 
     Column(Modifier.background(MaterialTheme.colorScheme.background)) {
 
@@ -119,8 +67,6 @@ fun Overview() {
             exit = fadeOut(animationSpec = tween(500))
         ) {
             val infiniteTransition = rememberInfiniteTransition()
-
-            // Animation values for the pulsating logo
             val scale by infiniteTransition.animateFloat(
                 initialValue = 0.9f,
                 targetValue = 1.1f,
@@ -140,22 +86,15 @@ fun Overview() {
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center
                 ) {
-                    val platform = getPlatform()
-
-                    Text(platform.name)
-
-                    // Guap Logo with pulsating effect
-//                    Image(
-//                        painter = painterResource(Res.drawable.Guap_logo), // Replace with your image resource
-//                        contentDescription = "GUAP Logo",
-//                        modifier = Modifier
-//                            .size(120.dp)
-//                            .scale(scale),
-//                        contentScale = ContentScale.Crop
-//                    )
-//                    Spacer(modifier = Modifier.height(24.dp))
-
-                    // Horizontal progress bar with spinning effect
+//                     Image(
+//                         painter = painterResource(Res.drawable.Guap_logo),
+//                         contentDescription = "GUAP Logo",
+//                         modifier = Modifier
+//                             .size(120.dp)
+//                             .scale(scale),
+//                         contentScale = ContentScale.Crop
+//                     )
+                    Spacer(modifier = Modifier.height(24.dp))
                     LinearProgressIndicator(
                         modifier = Modifier
                             .width(350.dp)
@@ -166,6 +105,8 @@ fun Overview() {
                 }
             }
         }
+        val uriHandler = LocalUriHandler.current
+        var expanded by remember { mutableStateOf(false) }
 
         // Main content visibility
         AnimatedVisibility(
@@ -176,22 +117,56 @@ fun Overview() {
             LazyRow(
                 modifier = Modifier
                     .scrollable(orientation = Orientation.Horizontal, state = scrollFilterState)
-                    .fillMaxWidth()
+                    .fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 item {
                     groups?.let {
                         ExpandableGroupField(it, "Группа", onItemSelected = { id ->
-                            selectedGroupId = id
+                            viewModel.selectGroup(id)
                         })
                     }
                     ExpandableWeekField(weekTypes, "Тип недели", onItemSelected = { type ->
-                        selectedWeekType = type
+                        viewModel.selectWeekType(type)
                     })
+
+                    Column {
+                        OutlinedButton(
+                            onClick = { expanded = !expanded },
+                        ) {
+                            Text("Навигация по корпусам")
+                        }
+
+                        DropdownMenu(
+                            expanded = expanded,
+                            onDismissRequest = { expanded = false },
+                            // Ensure that the dropdown menu is anchored to the button
+                            offset = DpOffset(x = 0.dp, y = 0.dp) // Adjust offset if necessary
+                        ) {
+                            DropdownMenuItem(onClick = {
+                                uriHandler.openUri("https://guap.ru/map_gast")
+                                expanded = false
+                            }) {
+                                Text("Гастелло")
+                            }
+                            DropdownMenuItem(onClick = {
+                                uriHandler.openUri("https://guap.ru/map_lens")
+                                expanded = false
+                            }) {
+                                Text("Ленсовета")
+                            }
+                            DropdownMenuItem(onClick = {
+                                uriHandler.openUri("https://guap.ru/map_bm")
+                                expanded = false
+                            }) {
+                                Text("Большая Морская")
+                            }
+                        }
+                    }
                 }
             }
         }
 
-        // Animated visibility for the loading indicator
         AnimatedVisibility(
             visible = isLoading,
             enter = fadeIn(animationSpec = tween(durationMillis = 300)),
@@ -203,7 +178,7 @@ fun Overview() {
                     .height(60.dp),
                 contentAlignment = Alignment.Center
             ) {
-                androidx.compose.material.CircularProgressIndicator(
+                androidx.compose.material3.CircularProgressIndicator(
                     modifier = Modifier
                         .size(48.dp)
                         .padding(8.dp)
@@ -211,7 +186,6 @@ fun Overview() {
             }
         }
 
-        // Fade in effect for the lessons content
         val alpha by animateFloatAsState(
             targetValue = if (!isLoading && lessons != null) 1f else 0f,
             animationSpec = tween(durationMillis = 300)
