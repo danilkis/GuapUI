@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Surface
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Build
 import androidx.compose.material.icons.rounded.Home
 import androidx.compose.material.icons.rounded.Person
 import androidx.compose.material.icons.rounded.Place
@@ -28,8 +27,8 @@ import org.lightwork.guapui.functions.fetchLessonRoomNaviUrl
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun LessonEntry(lesson: Lesson) {
-    val coroutineScope = rememberCoroutineScope();
-    val uriHandler = LocalUriHandler.current;
+    val coroutineScope = rememberCoroutineScope()
+    val uriHandler = LocalUriHandler.current
 
     Surface(
         modifier = Modifier
@@ -61,17 +60,21 @@ fun LessonEntry(lesson: Lesson) {
                         ) {
                             // Background progress (remaining percentage)
                             CircularProgressIndicator(
+                                progress = {
+                                    1f // Full circle
+                                },
+                                modifier = Modifier.size(24.dp),
                                 color = MaterialTheme.colorScheme.onPrimary, // Color for the remaining percentage
                                 strokeWidth = 2.dp,
-                                modifier = Modifier.size(24.dp),
-                                progress = 1f // Full circle
                             )
                             // Foreground progress (done percentage)
                             CircularProgressIndicator(
+                                progress = {
+                                    progress // Actual progress
+                                },
+                                modifier = Modifier.size(24.dp),
                                 color = MaterialTheme.colorScheme.primary, // Color for the done percentage
                                 strokeWidth = 2.dp,
-                                modifier = Modifier.size(24.dp),
-                                progress = progress // Actual progress
                             )
                             // Text in the center showing the percentage
                             Text(
@@ -173,7 +176,7 @@ fun LessonEntry(lesson: Lesson) {
                                     try {
                                         val roomUri = fetchLessonRoomNaviUrl(lesson)
                                         if (!roomUri.isNullOrEmpty())
-                                            uriHandler.openUri(roomUri);
+                                            uriHandler.openUri(roomUri)
                                     } catch (e: Exception) {
                                         println("Error fetching building uri: ${e.message}")
                                     }
@@ -200,7 +203,7 @@ fun LessonEntry(lesson: Lesson) {
                                     try {
                                         val buildingUri = fetchLessonBuildingNaviUrl(lesson)
                                         if (!buildingUri.isNullOrEmpty())
-                                            uriHandler.openUri(buildingUri);
+                                            uriHandler.openUri(buildingUri)
                                     } catch (e: Exception) {
                                         println("Error fetching building uri: ${e.message}")
                                     }

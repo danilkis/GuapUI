@@ -23,15 +23,12 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.lazy.staggeredgrid.items
 import androidx.compose.material.DropdownMenu
 import androidx.compose.material.DropdownMenuItem
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.layout.ContentScale
@@ -43,9 +40,6 @@ import guapui.composeapp.generated.resources.Res
 import org.jetbrains.compose.resources.painterResource
 import org.lightwork.guapui.viewmodel.ScheduleViewModel
 
-fun Boolean.toInt() = if (this) 1 else 2
-
-
 @Composable
 fun Overview(viewModel: ScheduleViewModel = viewModel { ScheduleViewModel() }) {
 
@@ -54,7 +48,7 @@ fun Overview(viewModel: ScheduleViewModel = viewModel { ScheduleViewModel() }) {
     val lessons by viewModel.lessons.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
 
-    val days = listOf("Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота", "Воскресенье", "Авто")
+    //val days = listOf("Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота", "Воскресенье", "Авто")
     val weekTypes = listOf("Авто", "Числитель", "Знаменатель")
     val scrollFilterState = rememberScrollState()
 
@@ -94,13 +88,13 @@ fun Overview(viewModel: ScheduleViewModel = viewModel { ScheduleViewModel() }) {
 //                             .scale(scale),
 //                         contentScale = ContentScale.Crop
 //                     )
-                    Spacer(modifier = Modifier.height(24.dp))
+//                    Spacer(modifier = Modifier.height(24.dp))
                     LinearProgressIndicator(
                         modifier = Modifier
                             .width(350.dp)
                             .height(20.dp)
                             .padding(8.dp),
-                        color = Color.White
+                        color = MaterialTheme.colorScheme.primary
                     )
                 }
             }

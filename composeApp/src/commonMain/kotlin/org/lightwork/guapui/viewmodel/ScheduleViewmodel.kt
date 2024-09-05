@@ -13,7 +13,6 @@ import org.lightwork.guapui.functions.fetchWeekInfo
 import org.lightwork.guapui.models.Day
 import org.lightwork.guapui.models.Group
 import org.lightwork.guapui.models.WeekInfo
-import org.lightwork.guapui.view.toInt
 
 class ScheduleViewModel : ViewModel() {
 
@@ -66,7 +65,7 @@ class ScheduleViewModel : ViewModel() {
                     val weekNumber = when (selectedWeekType) {
                         "Числитель" -> 1
                         "Знаменатель" -> 2
-                        "Авто" -> _weekInfo.value!!.IsWeekOdd.toInt()
+                        "Авто" ->  if (_weekInfo.value!!.IsWeekOdd) 1 else 2
                         else -> 1
                     }
                     _lessons.value = fetchLessons(selectedGroupId, weekNumber)
