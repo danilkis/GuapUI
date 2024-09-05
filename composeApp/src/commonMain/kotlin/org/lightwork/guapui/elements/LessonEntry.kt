@@ -19,10 +19,18 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.text.style.TextAlign
 import org.lightwork.guapui.models.Lesson
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.platform.LocalUriHandler
+import kotlinx.coroutines.launch
+import org.lightwork.guapui.functions.fetchLessonBuildingNaviUrl
+import org.lightwork.guapui.functions.fetchLessonRoomNaviUrl
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun LessonEntry(lesson: Lesson) {
+    val coroutineScope = rememberCoroutineScope();
+    val uriHandler = LocalUriHandler.current;
+
     Surface(
         modifier = Modifier
             .fillMaxWidth()
@@ -160,7 +168,17 @@ fun LessonEntry(lesson: Lesson) {
                                     tint = MaterialTheme.colorScheme.tertiary
                                 )
                             },
-                            onClick = {},
+                            onClick = {
+                                coroutineScope.launch {
+                                    try {
+                                        val roomUri = fetchLessonRoomNaviUrl(lesson)
+                                        if (!roomUri.isNullOrEmpty())
+                                            uriHandler.openUri(roomUri);
+                                    } catch (e: Exception) {
+                                        println("Error fetching building uri: ${e.message}")
+                                    }
+                                }
+                            },
                             label = {
                                 Text(
                                     lesson.room,
@@ -177,7 +195,17 @@ fun LessonEntry(lesson: Lesson) {
                                     tint = MaterialTheme.colorScheme.tertiary
                                 )
                             },
-                            onClick = {},
+                            onClick = {
+                                coroutineScope.launch {
+                                    try {
+                                        val buildingUri = fetchLessonBuildingNaviUrl(lesson)
+                                        if (!buildingUri.isNullOrEmpty())
+                                            uriHandler.openUri(buildingUri);
+                                    } catch (e: Exception) {
+                                        println("Error fetching building uri: ${e.message}")
+                                    }
+                                }
+                            },
                             label = { Text(lesson.building, color = MaterialTheme.colorScheme.onSurface) }
                         )
                     }
