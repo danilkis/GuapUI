@@ -8,8 +8,7 @@ import kotlinx.datetime.*
 import kotlinx.serialization.json.Json
 import org.lightwork.guapui.models.*
 
-
-suspend fun fetchLessons(groupId: Int, weekNumber: Int): List<Day> {
+suspend fun fetchLessons(GroupId: Int, weekNumber: Int): List<Day> {
     val client = HttpClient {}
     val dayNames = mapOf(
         1 to "Понедельник",
@@ -48,8 +47,12 @@ suspend fun fetchLessons(groupId: Int, weekNumber: Int): List<Day> {
                     val startTime = timeRange[0]
                     val endTime = timeRange[1]
 
-                    val (remainingTime, donePercentage) = if (Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date.dayOfWeek.isoDayNumber == dayNumber &&
-                        Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).time in LocalTime.parse(startTime)..LocalTime.parse(endTime)) {
+                    val (remainingTime, donePercentage) = if (Clock.System.now()
+                            .toLocalDateTime(TimeZone.currentSystemDefault()).date.dayOfWeek.isoDayNumber == dayNumber &&
+                        Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).time in LocalTime.parse(
+                            startTime
+                        )..LocalTime.parse(endTime)
+                    ) {
                         calculateRemainingTime(startTime, endTime)
                     } else {
                         "" to 0
@@ -92,6 +95,7 @@ suspend fun fetchLessons(groupId: Int, weekNumber: Int): List<Day> {
         client.close()
     }
 }
+
 suspend fun fetchGroups(): List<Group> {
     val client = HttpClient {}
     return try {
@@ -121,12 +125,14 @@ fun normalizeTimeString(time: String): String {
     val minutes = parts[1].padStart(2, '0') // Ensure minutes are 2 digits, including the leading 0
     return "$hours:$minutes"
 }
+
 fun calculateBreakTime(currentLessonTime: String?, nextLessonTime: String?): String? {
     if (currentLessonTime == null || nextLessonTime == null) return null
     val currentEndTime = currentLessonTime.split(" - ").getOrNull(1) ?: return null
     val nextStartTime = nextLessonTime.split(" - ").getOrNull(0) ?: return null
     return "$currentEndTime - $nextStartTime"
 }
+
 fun calculateRemainingTime(startTime: String, endTime: String): Pair<String, Int> {
     val currentTime = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).time
     val lessonStartTime = LocalTime.parse(normalizeTimeString(startTime))
@@ -142,7 +148,8 @@ fun calculateRemainingTime(startTime: String, endTime: String): Pair<String, Int
     val remainingDurationSeconds = endSeconds - currentSeconds
 
     // Calculate the percentage of time completed
-    val donePercentage = ((totalDurationSeconds - remainingDurationSeconds).toDouble() / totalDurationSeconds * 100).toInt()
+    val donePercentage =
+        ((totalDurationSeconds - remainingDurationSeconds).toDouble() / totalDurationSeconds * 100).toInt()
 
     // Calculate hours and minutes from the remaining seconds
     val hours = remainingDurationSeconds / 3600
@@ -221,13 +228,18 @@ suspend fun fetchLessonRoomNaviUrl(lesson: Lesson): String? {
         val roomCode2 = lesson.room.replace("-", "")
 
         val shop = shops.find {
-            it.roomNumber.contains(roomCode1) ||
-            it.roomNumber.contains(roomCode2) ||
+            (
+                !it.roomNumber.isNullOrEmpty() &&
+                (
+                    it.roomNumber.contains(roomCode1) ||
+                    it.roomNumber.contains(roomCode2)
+                )
+            ) ||
             it.searchTags.contains(roomCode1) ||
             it.searchTags.contains(roomCode2)
         }
 
-        if(shop === null) null else "https://qr.tango.vision/${qrCode.mall.settings.slug}/map?qrId=${qrCode.id}&target=${shop.id}"
+        if (shop === null) null else "https://qr.tango.vision/${qrCode.mall.settings.slug}/map?qrId=${qrCode.id}&target=${shop.id}"
     } catch (e: Exception) {
         throw e
     } finally {
