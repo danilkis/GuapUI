@@ -12,6 +12,13 @@ plugins {
     kotlin("plugin.serialization") version "2.0.0"
 }
 
+repositories {
+    mavenCentral()
+    google()
+    // Desktop target needs this repository for compose-webview-multiplatform
+    maven("https://jogamp.org/deployment/maven")
+}
+
 kotlin {
     @OptIn(ExperimentalWasmDsl::class)
     wasmJs {
@@ -30,14 +37,14 @@ kotlin {
         }
         binaries.executable()
     }
-    
+
     androidTarget {
         @OptIn(ExperimentalKotlinGradlePluginApi::class)
         compilerOptions {
             jvmTarget.set(JvmTarget.JVM_11)
         }
     }
-    
+
     jvm("desktop")
 
     sourceSets {
@@ -80,6 +87,8 @@ kotlin {
                 implementation(compose.desktop.currentOs)
                 implementation(libs.kotlinx.coroutines.swing)
                 implementation(libs.ktor.client.okhttp) // This will be ignored in WASM
+                api("io.github.kevinnzou:compose-webview-multiplatform:1.9.20")
+                implementation("dev.datlag:kcef:2024.04.20.2")
             }
         }
     }
@@ -127,12 +136,35 @@ dependencies {
 
 compose.desktop {
     application {
-        mainClass = "org.lightwork.guapui.MainKt"
-
+        mainClass = "org.lightwork.guapui.main"
         nativeDistributions {
-            targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
+            targetFormats(TargetFormat.Pkg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "org.lightwork.guapui"
             packageVersion = "1.0.0"
+            macOS {
+                iconFile.set(project.file("src/resources/icons/suai.icns"))
+            }
+            windows {
+                iconFile.set(project.file("src/resources/icons/suai.ico"))
+            }
+            linux {
+                iconFile.set(project.file("src/resources/icons/suai.png"))
+            }
+        }
+        afterEvaluate {
+            tasks.withType<JavaExec> {
+                jvmArgs("--add-opens", "java.desktop/sun.awt=ALL-UNNAMED")
+                jvmArgs("--add-opens", "java.desktop/java.awt.peer=ALL-UNNAMED")
+
+                if (System.getProperty("os.name").contains("Mac")) {
+                    jvmArgs("--add-opens", "java.desktop/sun.awt=ALL-UNNAMED")
+                    jvmArgs("--add-opens", "java.desktop/sun.lwawt=ALL-UNNAMED")
+                    jvmArgs("--add-opens", "java.desktop/sun.lwawt.macosx=ALL-UNNAMED")
+                }
+            }
+        }
+        buildTypes.release.proguard {
+            configurationFiles.from("compose-desktop.pro")
         }
     }
 }

@@ -27,7 +27,7 @@ import org.lightwork.guapui.viewmodel.ScheduleViewModel
 
 enum class AppScreen(val title: String) {
     Main(title = "SuaiUI"),
-    Map(title = "Map")
+    Map(title = "Навигатор")
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -60,9 +60,9 @@ fun ScheduleAppBar(
 @Composable
 fun ScheduleApp(
     viewModel: ScheduleViewModel = viewModel { ScheduleViewModel() },
-    navController: NavHostController = rememberNavController()
+    navController: NavHostController = rememberNavController(),
+    mapViewModel: MapViewModel = viewModel { MapViewModel() }
 ) {
-    val mapVM = MapViewModel()
     // Get current back stack entry
     val backStackEntry by navController.currentBackStackEntryAsState()
     // Get the name of the current screen
@@ -89,11 +89,11 @@ fun ScheduleApp(
                 .padding(innerPadding)
         ) {
             composable(route = AppScreen.Main.name) {
-                Overview(viewModel, navController, mapVM)
+                Overview(viewModel, navController, mapViewModel)
             }
             composable(route = AppScreen.Map.name) { backStackEntry ->
                 val uri = backStackEntry.arguments?.getString("uri") ?: ""
-                MapPage(navController, mapVM)
+                MapPage(navController, mapViewModel)
             }
         }
     }

@@ -78,36 +78,7 @@ fun Overview(viewModel: ScheduleViewModel, navController: NavController, mapView
                     repeatMode = RepeatMode.Reverse
                 )
             )
-            val platform = getPlatform()
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(MaterialTheme.colorScheme.background),
-                contentAlignment = Alignment.Center
-            ) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
-                ) {
-                    println(platform.name)
-//                     Image(
-//                         painter = painterResource(Res.drawable.Guap_logo),
-//                         contentDescription = "GUAP Logo",
-//                         modifier = Modifier
-//                             .size(120.dp)
-//                             .scale(scale),
-//                         contentScale = ContentScale.Crop
-//                     )
-//                    Spacer(modifier = Modifier.height(24.dp))
-                    LinearProgressIndicator(
-                        modifier = Modifier
-                            .width(350.dp)
-                            .height(20.dp)
-                            .padding(8.dp),
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                }
-            }
+            SplashScreen()
         }
         val uriHandler = LocalUriHandler.current
         var expanded by remember { mutableStateOf(false) }
