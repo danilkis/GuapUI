@@ -177,3 +177,63 @@ fun declineMinute(minutes: Long): String {
         else -> "минут"
     }
 }
+
+val buildingQRCodeMap = mapOf(
+    "Гастелло 15" to "645e20bf4439659ffb28ff47",
+    "Б.Морская 67" to "645e1f3d4439659ffb28bf8c",
+    "Ленсовета 14" to "645e219a4439659ffb292374",
+    "Московский 149" to "645e206d4439659ffb28f0e8"
+)
+
+val PartialJson = Json { ignoreUnknownKeys = true }
+
+suspend fun fetchLessonBuildingNaviUrl(lesson: Lesson): String? {
+    val client = HttpClient {}
+
+    val buildingQRCodeId = buildingQRCodeMap[lesson.building]
+    if (buildingQRCodeId.isNullOrEmpty()) {
+        return null
+    }
+
+    return try {
+        val qrCodeResponse = client.get("https://api.tango.vision/qrcodes/${buildingQRCodeId}").bodyAsText()
+        val qrCode: TangoVisionQRCode = PartialJson.decodeFromString(qrCodeResponse)
+        "https://qr.tango.vision/${qrCode.mall.settings.slug}/map?qrId=${qrCode.id}"
+    } catch (e: Exception) {
+        throw e
+    } finally {
+        client.close()
+    }
+}
+
+suspend fun fetchLessonRoomNaviUrl(lesson: Lesson): String? {
+    val client = HttpClient {}
+
+    val buildingQRCodeId = buildingQRCodeMap[lesson.building]
+    if (buildingQRCodeId.isNullOrEmpty()) {
+        return null
+    }
+
+    return try {
+        val qrCodeResponse = client.get("https://api.tango.vision/qrcodes/${buildingQRCodeId}").bodyAsText()
+        val qrCode: TangoVisionQRCode = PartialJson.decodeFromString(qrCodeResponse)
+        val shopsResponse = client.get("https://api.tango.vision/shop?mall=${qrCode.mall.id}").bodyAsText()
+        val shops: List<TangoVisionShop> = PartialJson.decodeFromString(shopsResponse)
+
+        val roomCode1 = lesson.room.replace("-", " ")
+        val roomCode2 = lesson.room.replace("-", "")
+
+        val shop = shops.find {
+            it.roomNumber.contains(roomCode1) ||
+            it.roomNumber.contains(roomCode2) ||
+            it.searchTags.contains(roomCode1) ||
+            it.searchTags.contains(roomCode2)
+        }
+
+        if(shop === null) null else "https://qr.tango.vision/${qrCode.mall.settings.slug}/map?qrId=${qrCode.id}&target=${shop.id}"
+    } catch (e: Exception) {
+        throw e
+    } finally {
+        client.close()
+    }
+}
