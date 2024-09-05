@@ -3,15 +3,8 @@ package org.lightwork.guapui.elements
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.input.key.*
-import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.unit.dp
-import org.lightwork.guapui.Platform
 import org.lightwork.guapui.models.Group
 
 import androidx.compose.material3.DropdownMenuItem

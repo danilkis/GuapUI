@@ -5,11 +5,8 @@ import io.ktor.client.call.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import kotlinx.datetime.*
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import org.lightwork.guapui.models.*
-import kotlin.time.Duration
-
 
 suspend fun fetchLessons(GroupId: Int, weekNumber: Int): List<Day> {
     val client = HttpClient {}
@@ -33,19 +30,19 @@ suspend fun fetchLessons(GroupId: Int, weekNumber: Int): List<Day> {
     )
 
     try {
-        val response: String = client.get("https://api.guap.ru/rasp/custom/get-sem-rasp/group${GroupId}").bodyAsText()
+        val response: String = client.get("https://api.guap.ru/rasp/custom/get-sem-rasp/group${groupId}").bodyAsText()
         val apiLessons: Array<ApiLesson> = Json.decodeFromString(response)
-        val filteredLessons = apiLessons.filter { it.Week?.toInt() == weekNumber }
+        val filteredLessons = apiLessons.filter { it.Week == weekNumber }
 
         return filteredLessons.groupBy { it.Day ?: 0 }
             .entries
             .sortedBy { it.key }
             .map { (dayNumber, lessons) ->
-                val sortedLessons = lessons.sortedBy { it.Less?.toInt() ?: 0 }
+                val sortedLessons = lessons.sortedBy { it.Less ?: 0 }
                 val lessonList = mutableListOf<Lesson>()
 
                 sortedLessons.forEachIndexed { index, apiLesson ->
-                    val lessonNumber = apiLesson.Less?.toInt() ?: index + 1
+                    val lessonNumber = apiLesson.Less ?: (index + 1)
                     val timeRange = lessonTimes[lessonNumber]?.split(" - ") ?: listOf("00:00", "00:00")
                     val startTime = timeRange[0]
                     val endTime = timeRange[1]
@@ -75,7 +72,7 @@ suspend fun fetchLessons(GroupId: Int, weekNumber: Int): List<Day> {
 
                     // Calculate the break time for the current lesson
                     if (index < sortedLessons.size - 1) {
-                        val nextLessonNumber = sortedLessons[index + 1].Less?.toInt() ?: lessonNumber + 1
+                        val nextLessonNumber = sortedLessons[index + 1].Less ?: (lessonNumber + 1)
                         val breakTime = calculateBreakTime(lessonTimes[lessonNumber], lessonTimes[nextLessonNumber])
                         if (breakTime != null) {
                             lesson.breakTime = breakTime
