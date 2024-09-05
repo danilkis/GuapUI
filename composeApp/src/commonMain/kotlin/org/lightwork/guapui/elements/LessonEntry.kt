@@ -20,13 +20,16 @@ import org.lightwork.guapui.models.Lesson
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.LocalUriHandler
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import kotlinx.coroutines.launch
 import org.lightwork.guapui.functions.fetchLessonBuildingNaviUrl
 import org.lightwork.guapui.functions.fetchLessonRoomNaviUrl
+import org.lightwork.guapui.viewmodel.MapViewModel
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun LessonEntry(lesson: Lesson) {
+fun LessonEntry(lesson: Lesson, navController: NavController, mapViewModel: MapViewModel) {
     val coroutineScope = rememberCoroutineScope()
     val uriHandler = LocalUriHandler.current
 
@@ -175,8 +178,18 @@ fun LessonEntry(lesson: Lesson) {
                                 coroutineScope.launch {
                                     try {
                                         val roomUri = fetchLessonRoomNaviUrl(lesson)
-                                        if (!roomUri.isNullOrEmpty())
-                                            uriHandler.openUri(roomUri)
+                                        if (!roomUri.isNullOrEmpty()) {
+                                            mapViewModel.setUri(roomUri) // Save the URI into the ViewModel using StateFlow
+                                            val platform = getPlatform()
+                                            when {
+                                                "Java" in platform.name || "Android" in platform.name -> {
+                                                    navController.navigate("Map")
+                                                }
+                                                "Web" in platform.name -> {
+                                                    uriHandler.openUri(roomUri)
+                                                }
+                                            }
+                                        }
                                     } catch (e: Exception) {
                                         println("Error fetching building uri: ${e.message}")
                                     }
@@ -203,7 +216,18 @@ fun LessonEntry(lesson: Lesson) {
                                     try {
                                         val buildingUri = fetchLessonBuildingNaviUrl(lesson)
                                         if (!buildingUri.isNullOrEmpty())
-                                            uriHandler.openUri(buildingUri)
+                                        {
+                                           mapViewModel.setUri(buildingUri) // Save the URI into the ViewModel using StateFlow
+                                            val platform = getPlatform()
+                                            when {
+                                                "Java" in platform.name || "Android" in platform.name -> {
+                                                    navController.navigate("Map")
+                                                }
+                                                "Web" in platform.name -> {
+                                                    uriHandler.openUri(buildingUri)
+                                                }
+                                            }
+                                        }
                                     } catch (e: Exception) {
                                         println("Error fetching building uri: ${e.message}")
                                     }

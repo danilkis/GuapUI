@@ -35,13 +35,22 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.unit.DpOffset
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import guapui.composeapp.generated.resources.Guap_logo
 import guapui.composeapp.generated.resources.Res
 import org.jetbrains.compose.resources.painterResource
+import org.lightwork.guapui.Platform
+import org.lightwork.guapui.elements.HelperButton
+import org.lightwork.guapui.getPlatform
+import org.lightwork.guapui.viewmodel.MapViewModel
 import org.lightwork.guapui.viewmodel.ScheduleViewModel
 
 @Composable
-fun Overview(viewModel: ScheduleViewModel = viewModel { ScheduleViewModel() }) {
+fun Overview(viewModel: ScheduleViewModel, navController: NavController, mapViewModel: MapViewModel) {
 
     val groups by viewModel.groups.collectAsState()
     val weekInfo by viewModel.weekInfo.collectAsState()
@@ -69,7 +78,7 @@ fun Overview(viewModel: ScheduleViewModel = viewModel { ScheduleViewModel() }) {
                     repeatMode = RepeatMode.Reverse
                 )
             )
-
+            val platform = getPlatform()
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -80,6 +89,7 @@ fun Overview(viewModel: ScheduleViewModel = viewModel { ScheduleViewModel() }) {
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center
                 ) {
+                    println(platform.name)
 //                     Image(
 //                         painter = painterResource(Res.drawable.Guap_logo),
 //                         contentDescription = "GUAP Logo",
@@ -123,40 +133,7 @@ fun Overview(viewModel: ScheduleViewModel = viewModel { ScheduleViewModel() }) {
                     ExpandableWeekField(weekTypes, "Тип недели", onItemSelected = { type ->
                         viewModel.selectWeekType(type)
                     })
-
-                    Column {
-                        OutlinedButton(
-                            onClick = { expanded = !expanded },
-                        ) {
-                            Text("Навигация по корпусам")
-                        }
-
-                        DropdownMenu(
-                            expanded = expanded,
-                            onDismissRequest = { expanded = false },
-                            // Ensure that the dropdown menu is anchored to the button
-                            offset = DpOffset(x = 0.dp, y = 0.dp) // Adjust offset if necessary
-                        ) {
-                            DropdownMenuItem(onClick = {
-                                uriHandler.openUri("https://guap.ru/map_gast")
-                                expanded = false
-                            }) {
-                                Text("Гастелло")
-                            }
-                            DropdownMenuItem(onClick = {
-                                uriHandler.openUri("https://guap.ru/map_lens")
-                                expanded = false
-                            }) {
-                                Text("Ленсовета")
-                            }
-                            DropdownMenuItem(onClick = {
-                                uriHandler.openUri("https://guap.ru/map_bm")
-                                expanded = false
-                            }) {
-                                Text("Большая Морская")
-                            }
-                        }
-                    }
+                    HelperButton()
                 }
             }
         }
@@ -196,7 +173,7 @@ fun Overview(viewModel: ScheduleViewModel = viewModel { ScheduleViewModel() }) {
                     modifier = Modifier.alpha(alpha)
                 ) {
                     items(lessons ?: emptyList()) { day ->
-                        DayCard(day.lessons, day.dayName)
+                        DayCard(day.lessons, day.dayName,navController, mapViewModel)
                     }
                 }
             }

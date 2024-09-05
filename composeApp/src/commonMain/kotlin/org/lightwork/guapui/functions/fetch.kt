@@ -30,7 +30,7 @@ suspend fun fetchLessons(GroupId: Int, weekNumber: Int): List<Day> {
     )
 
     try {
-        val response: String = client.get("https://api.guap.ru/rasp/custom/get-sem-rasp/group${groupId}").bodyAsText()
+        val response: String = client.get("https://api.guap.ru/rasp/custom/get-sem-rasp/group${GroupId}").bodyAsText()
         val apiLessons: Array<ApiLesson> = Json.decodeFromString(response)
         val filteredLessons = apiLessons.filter { it.Week == weekNumber }
 
