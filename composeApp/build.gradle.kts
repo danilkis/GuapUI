@@ -136,9 +136,14 @@ dependencies {
 
 compose.desktop {
     application {
-        mainClass = "org.lightwork.guapui.main"
+        mainClass = "org.lightwork.guapui.MainKt"
         nativeDistributions {
-            targetFormats(TargetFormat.Pkg, TargetFormat.Msi, TargetFormat.Deb)
+            packageName = "SuaiUI"
+            packageVersion = "0.1-SNAPSHOT"
+            description = "Простое приложение ддя расписания"
+            copyright = "© 2024 Lightwork. All rights reserved."
+            vendor = "Lightwork"
+            targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "org.lightwork.guapui"
             packageVersion = "1.0.0"
             macOS {

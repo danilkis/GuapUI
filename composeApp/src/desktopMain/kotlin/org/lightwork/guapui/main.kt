@@ -13,52 +13,51 @@ import org.lightwork.guapui.view.SplashScreen
 import java.io.File
 import kotlin.math.max
 
-
-fun main() = application {
-    Window(onCloseRequest = ::exitApplication) {
-        var restartRequired by remember { mutableStateOf(false) }
-        var downloading by remember { mutableStateOf(0F) }
-        var initialized by remember { mutableStateOf(false) }
-        LaunchedEffect(Unit) {
-            withContext(Dispatchers.IO) {
-                KCEF.init(builder = {
-                    installDir(File("kcef-bundle"))
-                    progress {
-                        onDownloading {
-                            downloading = max(it, 0F)
+fun main(args: Array<String>) = application {
+        Window(onCloseRequest = ::exitApplication) {
+            var restartRequired by remember { mutableStateOf(false) }
+            var downloading by remember { mutableStateOf(0F) }
+            var initialized by remember { mutableStateOf(false) }
+            LaunchedEffect(Unit) {
+                withContext(Dispatchers.IO) {
+                    KCEF.init(builder = {
+                        installDir(File("kcef-bundle"))
+                        progress {
+                            onDownloading {
+                                downloading = max(it, 0F)
+                            }
+                            onInitialized {
+                                initialized = true
+                            }
                         }
-                        onInitialized {
-                            initialized = true
+                        settings {
+                            cachePath = File("cache").absolutePath
                         }
-                    }
-                    settings {
-                        cachePath = File("cache").absolutePath
-                    }
-                }, onError = {
-                    if (it != null) {
-                        it.printStackTrace()
-                    }
-                }, onRestartRequired = {
-                    restartRequired = true
-                })
+                                        }, onError = {
+                                            if (it != null) {
+                                                it.printStackTrace()
+                                            }
+                                                     }, onRestartRequired = {
+                                                         restartRequired = true
+                                                     })
+                }
             }
-        }
 
-        if (restartRequired) {
-            Text(text = "Restart required.")
-        } else {
-            if (initialized) {
-                // Display the main app when initialized
-                App()
+            if (restartRequired) {
+                Text(text = "Restart required.")
             } else {
+                if (initialized) {
+                    // Display the main app when initialized
+                    App()
+                } else {
                 // Show splash screen until initialization is done
+                }
             }
-        }
 
-        DisposableEffect(Unit) {
-            onDispose {
-                KCEF.disposeBlocking()
+            DisposableEffect(Unit) {
+                onDispose {
+                    KCEF.disposeBlocking()
+                }
             }
         }
     }
-}
