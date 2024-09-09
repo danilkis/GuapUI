@@ -51,7 +51,6 @@ import org.lightwork.guapui.viewmodel.ScheduleViewModel
 
 @Composable
 fun Overview(viewModel: ScheduleViewModel, navController: NavController, mapViewModel: MapViewModel, onSplashScreenVisibilityChanged: (Boolean) -> Unit) {
-    println("overview")
     val groups by viewModel.groups.collectAsState()
     val weekInfo by viewModel.weekInfo.collectAsState()
     val lessons by viewModel.lessons.collectAsState()

@@ -135,11 +135,9 @@ fun ScheduleApp(
                             isSplashScreenVisible = isVisible
                         }
                     )
-                    println("navigated to overview")
                 }
                 composable(route = AppScreen.Map.name) { backStackEntry ->
                     val uri = backStackEntry.arguments?.getString("uri") ?: ""
-                    println("navigated to map")
                     MapPage(navController, mapViewModel)
                 }
             }

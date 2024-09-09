@@ -9,7 +9,6 @@ plugins {
 }
 
 kotlin {
-    @OptIn(ExperimentalWasmDsl::class)
     wasmJs {
         browser {
             val projectDirPath = project.projectDir.path

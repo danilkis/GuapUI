@@ -5,6 +5,7 @@ import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Text
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import dev.datlag.kcef.KCEF
@@ -17,14 +18,24 @@ import java.io.File
 import kotlin.math.max
 
 fun main(args: Array<String>) = application {
-    Window(onCloseRequest = ::exitApplication) {
+    var windowTitle by remember { mutableStateOf("SuaiUI") }
+    val isDarkTheme = isSystemInDarkTheme()
+    val appSupportDir = File(System.getProperty("user.home"), "Library/Application Support/SuaiUI")
+    if (!appSupportDir.exists()) {
+        appSupportDir.mkdirs() // Create the directory if it doesn't exist
+    }
+    Window(onCloseRequest = ::exitApplication, title = windowTitle) {
         var restartRequired by remember { mutableStateOf(false) }
         var downloading by remember { mutableStateOf(0F) }
         var initialized by remember { mutableStateOf(false) }
         LaunchedEffect(Unit) {
             withContext(Dispatchers.IO) {
                 init(builder = {
-                    installDir(File("kcef-bundle"))
+                    if (System.getProperty("os.name").contains("Mac")) {
+                        installDir(File(appSupportDir, "kcef-bundle"))
+                    } else {
+                        installDir(File("kcef-bundle"))
+                    }
                     progress {
                         onDownloading {
                             downloading = max(it, 0F)
@@ -35,7 +46,12 @@ fun main(args: Array<String>) = application {
                         }
                     }
                     settings {
-                        cachePath = File("cache").absolutePath
+                        if (System.getProperty("os.name").contains("Mac")) {
+                            cachePath = File(appSupportDir, "cache").absolutePath
+                        } else {
+                            cachePath = File("cache").absolutePath
+                        }
+
                     }
                 }, onError = {
                     if (it != null) {
@@ -48,14 +64,12 @@ fun main(args: Array<String>) = application {
         }
 
         if (restartRequired) {
-            println("Restart required.")
-            Text(text = "Restart required.")
+            AppTheme(isDarkTheme, false, { WebLoadingScreen(0f, "Что-то пошло не так, свяжитесь с разработчиком") })
         } else {
             if (initialized) {
                 // Display the main app when initialized
                 App()
             } else {
-                val isDarkTheme = isSystemInDarkTheme()
                 AppTheme(isDarkTheme, false, { WebLoadingScreen(downloading) })
             }
         }

@@ -22,7 +22,6 @@ import org.lightwork.guapui.getPlatform
 
 @Composable
 fun SplashScreen() {
-    println("splash")
     val infiniteTransition = rememberInfiniteTransition()
     val scale by infiniteTransition.animateFloat(
         initialValue = 0.9f,
@@ -66,7 +65,7 @@ fun SplashScreen() {
 
 
 @Composable
-fun WebLoadingScreen(progress: Float) {
+fun WebLoadingScreen(progress: Float, message: String = "Подгружаем библиотеки, буквально пару минут") {
     val infiniteTransition = rememberInfiniteTransition()
     val scale by infiniteTransition.animateFloat(
         initialValue = 0.9f,
@@ -97,7 +96,7 @@ fun WebLoadingScreen(progress: Float) {
                  contentScale = ContentScale.Crop
              )
             Spacer(modifier = Modifier.height(24.dp))
-            Text("Подгружаем библиотеки, буквально пару минут", style = MaterialTheme.typography.headlineMedium, color = Color.Black)
+            Text(message, style = MaterialTheme.typography.headlineMedium, color = MaterialTheme.colorScheme.onBackground)
             Spacer(modifier = Modifier.height(12.dp))
             LinearProgressIndicator(
                 progress = {
