@@ -10,20 +10,32 @@ jobs:
     steps:
       - name: checkout repository
         uses: actions/checkout@v4
+        
       - name: validate gradle wrapper
         uses: gradle/actions/wrapper-validation@v3
+        
       - name: setup jdk 21
         uses: actions/setup-java@v4
         with:
           java-version: 21
           distribution: 'microsoft'
+          
       - name: make gradle wrapper executable
         if: ${{ runner.os != 'Windows' }}
         run: chmod +x ./gradlew
-      - name: build
-        run: ./gradlew packageDistributionForCurrentOS -DmainClass=org.lightwork.guapui.MainKt -p composeApp
+        
+      - name: build for linux or windows
+        run: |
+          if [ "${{ runner.os }}" == "Linux" ]; then
+            ./gradlew packageDeb -p composeApp
+          else
+            ./gradlew packageMsi -p composeApp
+        shell: bash
+        
       - name: capture build artifacts
         uses: actions/upload-artifact@v4
         with:
           name: desktop-${{ matrix.os }}
-          path: composeApp/build/compose/binaries
+          path: |
+            composeApp/build/compose/binaries/main/msi/* # For Windows
+            composeApp/build/compose/binaries/main/deb/* # For Linux
