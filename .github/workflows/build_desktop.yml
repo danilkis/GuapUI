@@ -14,13 +14,13 @@ jobs:
       - name: Validate Gradle wrapper
         uses: gradle/actions/wrapper-validation@v3
 
-      - name: Setup JDK (using Microsoft JDK 21)
+      - name: Setup JDK (Microsoft JDK 21)
         uses: actions/setup-java@v4
         with:
           java-version: 21
           distribution: 'microsoft'
 
-      - name: Setup JDK 17 (alternative, in case of issues with JDK 21)
+      - name: Setup JDK 17 (Adopt for Windows)
         if: ${{ matrix.os == 'windows-2022' }}
         uses: actions/setup-java@v4
         with:
@@ -31,7 +31,7 @@ jobs:
         if: ${{ runner.os != 'Windows' }}
         run: chmod +x ./gradlew
 
-      # Установка WIX для сборки в MSI
+      # Install WiX Toolset on Windows for packaging MSI
       - name: Install WiX Toolset on Windows
         if: ${{ matrix.os == 'windows-2022' }}
         run: |
@@ -39,13 +39,13 @@ jobs:
           unzip wix311-binaries.zip -d wix
           echo "$(pwd)/wix" >> $GITHUB_PATH
 
-      # Сборка
-      - name: Build for current OS with more logging
+      # Build and package application for the current OS
+      - name: Build for current OS with detailed logging
         run: |
-          ./gradlew packageDistributionForCurrentOS --info -p composeApp
+          ./gradlew packageDistributionForCurrentOS --warning-mode all --info -p composeApp
         shell: bash
-      
-      # Логи
+
+      # Upload the resulting build artifacts
       - name: Capture build artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -54,17 +54,26 @@ jobs:
             composeApp/build/compose/binaries/main/msi/* # For Windows
             composeApp/build/compose/binaries/main/deb/* # For Linux
 
-      - name: Upload jpackage logs (only if MSI build fails)
+      # Upload logs if MSI packaging fails
+      - name: Upload jpackage logs (Windows)
         if: failure() && matrix.os == 'windows-2022'
         uses: actions/upload-artifact@v4
         with:
           name: jpackage-logs
-          path: |
-            composeApp/build/compose/logs/packageMsi/*
+          path: composeApp/build/compose/logs/packageMsi/*
 
+      # Upload packageMsi.args.txt for debugging
       - name: Upload packageMsi.args.txt (if MSI build fails)
         if: failure() && matrix.os == 'windows-2022'
         uses: actions/upload-artifact@v4
         with:
           name: packageMsi-args
           path: composeApp/build/compose/tmp/packageMsi.args.txt
+
+      # Upload Gradle logs if the build fails
+      - name: Upload Gradle logs (if build fails)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gradle-logs
+          path: **/logs/**/*.log
