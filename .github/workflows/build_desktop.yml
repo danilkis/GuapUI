@@ -24,18 +24,11 @@ jobs:
         if: ${{ runner.os != 'Windows' }}
         run: chmod +x ./gradlew
         
-      - name: build for linux or windows
-        run: |
-          if [ "${{ runner.os }}" == "Linux" ]; then
-            ./gradlew packageDeb -p composeApp
-          else
-            ./gradlew packageMsi -p composeApp
-        shell: bash
+      - name: build for current OS
+        run: ./gradlew packageDistributionForCurrentOS -p composeApp
         
       - name: capture build artifacts
         uses: actions/upload-artifact@v4
         with:
           name: desktop-${{ matrix.os }}
-          path: |
-            composeApp/build/compose/binaries/main/msi/* # For Windows
-            composeApp/build/compose/binaries/main/deb/* # For Linux
+          path: composeApp/build/compose/binaries
