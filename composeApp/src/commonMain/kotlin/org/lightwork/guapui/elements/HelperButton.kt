@@ -1,8 +1,16 @@
 package org.lightwork.guapui.elements
 
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.Text
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import org.jetbrains.compose.resources.DrawableResource
+import org.jetbrains.compose.resources.painterResource
 
 @Composable
 fun HelperButton() {
@@ -15,7 +23,8 @@ fun HelperButton() {
         Text(
             text = "?",
             style = MaterialTheme.typography.titleLarge, // Using the proper typography style
-            color = MaterialTheme.colorScheme.primary // Applying primary color for the icon
+            color = MaterialTheme.colorScheme.primary,
+            fontSize = 25.sp// Applying primary color for the icon
         )
     }
 
@@ -45,6 +54,23 @@ fun HelperButton() {
                     Text("OK")
                 }
             }
+        )
+    }
+}
+
+
+@Composable
+fun SocialButton(socialUri: String, icon: DrawableResource) {
+    val uriHandler = LocalUriHandler.current
+    // Outlined Icon Button
+    OutlinedButton(
+        onClick = { uriHandler.openUri(socialUri) }
+    ) {
+        Icon(
+            painter = painterResource(icon),
+            contentDescription = "",
+            modifier = Modifier // Set the size to ensure it fits well
+                .padding(4.dp).size(25.dp) // Add padding to give some space around it
         )
     }
 }

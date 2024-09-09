@@ -50,12 +50,14 @@ import org.lightwork.guapui.viewmodel.MapViewModel
 import org.lightwork.guapui.viewmodel.ScheduleViewModel
 
 @Composable
-fun Overview(viewModel: ScheduleViewModel, navController: NavController, mapViewModel: MapViewModel) {
-
+fun Overview(viewModel: ScheduleViewModel, navController: NavController, mapViewModel: MapViewModel, onSplashScreenVisibilityChanged: (Boolean) -> Unit) {
+    println("overview")
     val groups by viewModel.groups.collectAsState()
     val weekInfo by viewModel.weekInfo.collectAsState()
     val lessons by viewModel.lessons.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
+   val isSplashScreenVisible = groups == null || weekInfo == null
+    onSplashScreenVisibilityChanged(isSplashScreenVisible)
 
     //val days = listOf("Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота", "Воскресенье", "Авто")
     val weekTypes = listOf("Авто", "Числитель", "Знаменатель")
@@ -65,7 +67,7 @@ fun Overview(viewModel: ScheduleViewModel, navController: NavController, mapView
 
         // Splash screen visibility
         AnimatedVisibility(
-            visible = groups == null || weekInfo == null,
+            visible = isSplashScreenVisible,
             enter = fadeIn(animationSpec = tween(500)),
             exit = fadeOut(animationSpec = tween(500))
         ) {
@@ -80,6 +82,7 @@ fun Overview(viewModel: ScheduleViewModel, navController: NavController, mapView
             )
             SplashScreen()
         }
+
         val uriHandler = LocalUriHandler.current
         var expanded by remember { mutableStateOf(false) }
 
@@ -104,7 +107,6 @@ fun Overview(viewModel: ScheduleViewModel, navController: NavController, mapView
                     ExpandableWeekField(weekTypes, "Тип недели", onItemSelected = { type ->
                         viewModel.selectWeekType(type)
                     })
-                    HelperButton()
                 }
             }
         }
