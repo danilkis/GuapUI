@@ -21,7 +21,7 @@ jobs:
         if: ${{ runner.os != 'Windows' }}
         run: chmod +x ./gradlew
       - name: build
-        run: ./gradlew createDistributable "-DmainClass=org.lightwork.guapui.MainKt" -p composeApp
+        run: ./gradlew composeApp:packageDistributionForCurrentOS -DmainClass=org.lightwork.guapui.MainKt -p composeApp
       - name: capture build artifacts
         uses: actions/upload-artifact@v4
         with:
