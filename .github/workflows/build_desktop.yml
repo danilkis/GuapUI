@@ -70,10 +70,3 @@ jobs:
           name: packageMsi-args
           path: composeApp/build/compose/tmp/packageMsi.args.txt
 
-      # Upload Gradle logs if the build fails
-      - name: Upload Gradle logs (if build fails)
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: gradle-logs
-          path: **/logs/**/*.log
