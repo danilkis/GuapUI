@@ -159,7 +159,7 @@
         val remainingTime = when {
             hours > 0 -> "Осталось $hours ${declineHour(hours.toLong())} $minutes ${declineMinute(minutes.toLong())}"
             minutes > 0 -> "Осталось $minutes ${declineMinute(minutes.toLong())}"
-            else -> "Урок закончился"
+            else -> "Пара завершенна"
         }
 
         return remainingTime to donePercentage
