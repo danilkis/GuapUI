@@ -30,12 +30,25 @@ fun main(args: Array<String>) = application {
         var initialized by remember { mutableStateOf(false) }
         LaunchedEffect(Unit) {
             withContext(Dispatchers.IO) {
-                init(builder = {
-                    if (System.getProperty("os.name").contains("Mac")) {
-                        installDir(File(appSupportDir, "kcef-bundle"))
-                    } else {
-                        installDir(File("kcef-bundle"))
+                val appInstallDir = when {
+                    System.getProperty("os.name").contains("Mac") -> {
+                        File(appSupportDir, "kcef-bundle")
                     }
+
+                    System.getProperty("os.name").contains("Windows") -> {
+                        // Use the directory where the JAR/executable is located as the base
+                        val appInstallPath =
+                            File(System.getProperty("user.dir")) // Current directory of the running app
+                        File(appInstallPath, "kcef-bundle") // Install KCEF in the same directory as the app
+                    }
+
+                    else -> {
+                        File("kcef-bundle") // Fallback for other OS
+                    }
+                }
+
+                init(builder = {
+                    installDir(appInstallDir)
                     progress {
                         onDownloading {
                             downloading = max(it, 0F)
@@ -46,12 +59,24 @@ fun main(args: Array<String>) = application {
                         }
                     }
                     settings {
-                        if (System.getProperty("os.name").contains("Mac")) {
-                            cachePath = File(appSupportDir, "cache").absolutePath
-                        } else {
-                            cachePath = File("cache").absolutePath
-                        }
+                        val cacheDir = when {
+                            System.getProperty("os.name").contains("Mac") -> {
+                                File(appSupportDir, "cache").absolutePath
+                            }
 
+                            System.getProperty("os.name").contains("Windows") -> {
+                                val appInstallPath = File(System.getProperty("user.dir"))
+                                File(
+                                    appInstallPath,
+                                    "cache"
+                                ).absolutePath // Store cache in the same directory as the app
+                            }
+
+                            else -> {
+                                File("cache").absolutePath // Fallback for other OS
+                            }
+                        }
+                        cachePath = cacheDir
                     }
                 }, onError = {
                     if (it != null) {
@@ -63,21 +88,21 @@ fun main(args: Array<String>) = application {
             }
         }
 
-        if (restartRequired) {
-            AppTheme(isDarkTheme, false, { WebLoadingScreen(0f, "Что-то пошло не так, свяжитесь с разработчиком") })
+    if (restartRequired) {
+        AppTheme(isDarkTheme, false, { WebLoadingScreen(0f, "Что-то пошло не так, свяжитесь с разработчиком") })
+    } else {
+        if (initialized) {
+            // Display the main app when initialized
+            App()
         } else {
-            if (initialized) {
-                // Display the main app when initialized
-                App()
-            } else {
-                AppTheme(isDarkTheme, false, { WebLoadingScreen(downloading) })
-            }
-        }
-
-        DisposableEffect(Unit) {
-            onDispose {
-                KCEF.disposeBlocking()
-            }
+            AppTheme(isDarkTheme, false, { WebLoadingScreen(downloading) })
         }
     }
+
+    DisposableEffect(Unit) {
+        onDispose {
+            KCEF.disposeBlocking()
+        }
+    }
+}
 }
