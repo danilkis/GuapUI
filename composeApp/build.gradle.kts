@@ -138,7 +138,7 @@ compose.desktop {
         nativeDistributions {
             packageName = "SuaiUI"
             packageVersion = "0.1-SNAPSHOT"
-            description = "Простое приложение ддя расписания"
+            // description = "Простое приложение ддя расписания"
             copyright = "© 2024 Lightwork. All rights reserved."
             vendor = "Lightwork"
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
