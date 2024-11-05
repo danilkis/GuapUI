@@ -42,27 +42,55 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import guapui.composeapp.generated.resources.Guap_logo
 import guapui.composeapp.generated.resources.Res
+import kotlinx.datetime.isoDayNumber
 import org.jetbrains.compose.resources.painterResource
 import org.lightwork.guapui.Platform
 import org.lightwork.guapui.elements.HelperButton
+import org.lightwork.guapui.elements.calendar.CalendarSlider
 import org.lightwork.guapui.getPlatform
+import org.lightwork.guapui.viewmodel.CalendarViewModel
 import org.lightwork.guapui.viewmodel.MapViewModel
 import org.lightwork.guapui.viewmodel.ScheduleViewModel
 
 @Composable
-fun Overview(viewModel: ScheduleViewModel, navController: NavController, mapViewModel: MapViewModel, onSplashScreenVisibilityChanged: (Boolean) -> Unit) {
+fun Overview(
+    viewModel: ScheduleViewModel,
+    navController: NavController,
+    mapViewModel: MapViewModel,
+    onSplashScreenVisibilityChanged: (Boolean) -> Unit,
+    calendarViewModel: CalendarViewModel // Add the CalendarViewModel parameter
+) {
+    // Observe the selected date from the CalendarViewModel
+    val selectedDate by calendarViewModel.selectedDate.collectAsState()
+
     val groups by viewModel.groups.collectAsState()
     val weekInfo by viewModel.weekInfo.collectAsState()
     val lessons by viewModel.lessons.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
-   val isSplashScreenVisible = groups == null || weekInfo == null
+    val isSplashScreenVisible = groups == null || weekInfo == null
     onSplashScreenVisibilityChanged(isSplashScreenVisible)
 
-    //val days = listOf("Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота", "Воскресенье", "Авто")
-    val weekTypes = listOf("Авто", "Числитель", "Знаменатель")
-    val scrollFilterState = rememberScrollState()
+    // Get day names for comparison
+    val dayNames = mapOf(
+        1 to "Понедельник",
+        2 to "Вторник",
+        3 to "Среда",
+        4 to "Четверг",
+        5 to "Пятница",
+        6 to "Суббота",
+        7 to "Воскресенье"
+    )
+
+    // Determine the current selected day
+    // Determine the current selected day as a day name
+    val selectedDayName = selectedDate?.dayOfWeek?.isoDayNumber?.let { dayNames[it] }
+    println(selectedDayName)
+
+    // Filter lessons by the selected day name
+    val filteredLessons = lessons?.filter { it.dayName == selectedDayName }
 
     Column(Modifier.background(MaterialTheme.colorScheme.background)) {
+        CalendarSlider(viewModel = calendarViewModel) // Pass the CalendarViewModel to CalendarSlider
 
         // Splash screen visibility
         AnimatedVisibility(
@@ -93,7 +121,7 @@ fun Overview(viewModel: ScheduleViewModel, navController: NavController, mapView
         ) {
             LazyRow(
                 modifier = Modifier
-                    .scrollable(orientation = Orientation.Horizontal, state = scrollFilterState)
+                    .scrollable(orientation = Orientation.Horizontal, state = rememberScrollState())
                     .fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -103,7 +131,7 @@ fun Overview(viewModel: ScheduleViewModel, navController: NavController, mapView
                             viewModel.selectGroup(id)
                         })
                     }
-                    ExpandableWeekField(weekTypes, "Тип недели", onItemSelected = { type ->
+                    ExpandableWeekField(listOf("Авто", "Числитель", "Знаменатель"), "Тип недели", onItemSelected = { type ->
                         viewModel.selectWeekType(type)
                     })
                 }
@@ -130,13 +158,13 @@ fun Overview(viewModel: ScheduleViewModel, navController: NavController, mapView
         }
 
         val alpha by animateFloatAsState(
-            targetValue = if (!isLoading && lessons != null) 1f else 0f,
+            targetValue = if (!isLoading && filteredLessons != null) 1f else 0f,
             animationSpec = tween(durationMillis = 300)
         )
 
         Box(modifier = Modifier.fillMaxSize()) {
             this@Column.AnimatedVisibility(
-                visible = !isLoading && lessons != null,
+                visible = !isLoading && filteredLessons != null,
                 enter = fadeIn(animationSpec = tween(durationMillis = 300)),
                 exit = fadeOut(animationSpec = tween(durationMillis = 300))
             ) {
@@ -144,8 +172,8 @@ fun Overview(viewModel: ScheduleViewModel, navController: NavController, mapView
                     columns = StaggeredGridCells.Adaptive(400.dp),
                     modifier = Modifier.alpha(alpha)
                 ) {
-                    items(lessons ?: emptyList()) { day ->
-                        DayCard(day.lessons, day.dayName,navController, mapViewModel)
+                    items(filteredLessons ?: emptyList()) { lessonDay ->
+                        DayCard(lessonDay.lessons, lessonDay.dayName, navController, mapViewModel)
                     }
                 }
             }

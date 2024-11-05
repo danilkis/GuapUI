@@ -1,6 +1,7 @@
 package org.lightwork.guapui.view
 
 import androidx.compose.animation.Crossfade
+import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
@@ -32,6 +33,7 @@ import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.lightwork.guapui.elements.HelperButton
 import org.lightwork.guapui.elements.SocialButton
+import org.lightwork.guapui.viewmodel.CalendarViewModel
 import org.lightwork.guapui.viewmodel.MapViewModel
 import org.lightwork.guapui.viewmodel.ScheduleViewModel
 
@@ -89,7 +91,8 @@ fun ScheduleAppBar(
 fun ScheduleApp(
     viewModel: ScheduleViewModel = viewModel { ScheduleViewModel() },
     navController: NavHostController = rememberNavController(),
-    mapViewModel: MapViewModel = viewModel { MapViewModel() }
+    mapViewModel: MapViewModel = viewModel { MapViewModel() },
+    calendarViewModel: CalendarViewModel = viewModel { CalendarViewModel() }
 ) {
     // Track whether the splash screen is visible
     var isSplashScreenVisible by remember { mutableStateOf(true) }
@@ -113,7 +116,8 @@ fun ScheduleApp(
                 ScheduleAppBar(
                     currentScreen = currentScreen,
                     canNavigateBack = navController.previousBackStackEntry != null,
-                    navigateUp = { navController.navigateUp() }
+                    navigateUp = { navController.navigateUp() },
+                    modifier = Modifier.animateContentSize(animationSpec = tween(durationMillis = 300))
                 )
             }
         }
@@ -131,13 +135,13 @@ fun ScheduleApp(
                         viewModel = viewModel,
                         navController = navController,
                         mapViewModel = mapViewModel,
+                        calendarViewModel = calendarViewModel,
                         onSplashScreenVisibilityChanged = { isVisible ->
                             isSplashScreenVisible = isVisible
                         }
                     )
                 }
                 composable(route = AppScreen.Map.name) { backStackEntry ->
-                    val uri = backStackEntry.arguments?.getString("uri") ?: ""
                     MapPage(navController, mapViewModel)
                 }
             }
