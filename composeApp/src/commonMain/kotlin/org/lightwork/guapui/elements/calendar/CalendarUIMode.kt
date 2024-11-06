@@ -17,6 +17,6 @@ data class CalendarUiModel(
         val isToday: Boolean
     ) {
         // Replace `DateTimeFormatter.ofPattern("E")` with string formatting for day abbreviations
-        val day: String = date.dayOfWeek.name.take(3).capitalize() // "Mon", "Tue", etc.
+        val day: String = date.dayOfWeek.name.take(3) // "Mon", "Tue", etc.
     }
 }

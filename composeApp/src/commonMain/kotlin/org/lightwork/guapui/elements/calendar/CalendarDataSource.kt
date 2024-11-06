@@ -13,7 +13,7 @@ class CalendarDataSource {
         // Calculate the starting date based on the week offset
         val adjustedStartDate = startDate.plus(DatePeriod(days = weekOffset * 7))
         val firstDayOfWeek = adjustedStartDate.withDayOfWeek(1) // First day of the week (Monday)
-        val endDayOfWeek = firstDayOfWeek.plus(DatePeriod(days = 7)) // Add 7 days to get the end of the week
+        val endDayOfWeek = firstDayOfWeek.plus(DatePeriod(days = 30)) // Add 7 days to get the end of the week
         val visibleDates = getDatesBetween(firstDayOfWeek, endDayOfWeek)
         return toUiModel(visibleDates, lastSelectedDate)
     }
