@@ -9,12 +9,9 @@ class CalendarDataSource {
     val today: LocalDate
         get() = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
 
-    fun getData(startDate: LocalDate = today, lastSelectedDate: LocalDate, weekOffset: Int = 0): CalendarUiModel {
-        // Calculate the starting date based on the week offset
-        val adjustedStartDate = startDate.plus(DatePeriod(days = weekOffset * 7))
-        val firstDayOfWeek = adjustedStartDate.withDayOfWeek(1) // First day of the week (Monday)
-        val endDayOfWeek = firstDayOfWeek.plus(DatePeriod(days = 30)) // Add 7 days to get the end of the week
-        val visibleDates = getDatesBetween(firstDayOfWeek, endDayOfWeek)
+    fun getData(startDate: LocalDate = today, lastSelectedDate: LocalDate): CalendarUiModel {
+        val endDate = startDate.plus(DatePeriod(months = 3)) // Cover 3 months
+        val visibleDates = getDatesBetween(startDate, endDate)
         return toUiModel(visibleDates, lastSelectedDate)
     }
 

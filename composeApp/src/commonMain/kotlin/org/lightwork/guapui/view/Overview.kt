@@ -42,6 +42,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import guapui.composeapp.generated.resources.Guap_logo
 import guapui.composeapp.generated.resources.Res
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.daysUntil
 import kotlinx.datetime.isoDayNumber
 import org.jetbrains.compose.resources.painterResource
 import org.lightwork.guapui.Platform
@@ -69,7 +71,12 @@ fun Overview(
     val isLoading by viewModel.isLoading.collectAsState()
     val isSplashScreenVisible = groups == null || weekInfo == null
     onSplashScreenVisibilityChanged(isSplashScreenVisible)
-
+    LaunchedEffect(selectedDate, viewModel.selectedGroupId) {
+        selectedDate?.let {
+            viewModel.selectDate(selectedDate!!)
+            viewModel.loadLessons()  // Передаем выбранную дату
+        }
+    }
     // Get day names for comparison
     val dayNames = mapOf(
         1 to "Понедельник",
@@ -131,9 +138,6 @@ fun Overview(
                             viewModel.selectGroup(id)
                         })
                     }
-                    ExpandableWeekField(listOf("Авто", "Числитель", "Знаменатель"), "Тип недели", onItemSelected = { type ->
-                        viewModel.selectWeekType(type)
-                    })
                 }
             }
         }
@@ -168,15 +172,31 @@ fun Overview(
                 enter = fadeIn(animationSpec = tween(durationMillis = 300)),
                 exit = fadeOut(animationSpec = tween(durationMillis = 300))
             ) {
-                LazyVerticalStaggeredGrid(
-                    columns = StaggeredGridCells.Adaptive(400.dp),
-                    modifier = Modifier.alpha(alpha)
-                ) {
-                    items(filteredLessons ?: emptyList()) { lessonDay ->
-                        DayCard(lessonDay.lessons, lessonDay.dayName, navController, mapViewModel)
+                if (filteredLessons.isNullOrEmpty()) {
+                    // Display the "No lessons" message
+                    Box(modifier = Modifier.fillMaxSize())
+                    {
+                        Text(
+                            text = "На этот день пар нет, ура!",
+                            style = MaterialTheme.typography.titleLarge,
+                            modifier = Modifier
+                                .align(Alignment.Center)  // Center text horizontally and vertically
+                                .padding(16.dp),
+                            color = MaterialTheme.colorScheme.onBackground
+                        )
+                    }
+                } else {
+                    LazyVerticalStaggeredGrid(
+                        columns = StaggeredGridCells.Adaptive(400.dp),
+                        modifier = Modifier.alpha(alpha)
+                    ) {
+                        items(filteredLessons) { lessonDay ->
+                            DayCard(lessonDay.lessons, lessonDay.dayName, navController, mapViewModel)
+                        }
                     }
                 }
             }
         }
     }
 }
+

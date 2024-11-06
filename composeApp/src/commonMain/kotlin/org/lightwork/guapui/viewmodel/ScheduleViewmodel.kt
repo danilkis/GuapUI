@@ -7,6 +7,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.daysUntil
 import org.lightwork.guapui.functions.fetchGroups
 import org.lightwork.guapui.functions.fetchLessons
 import org.lightwork.guapui.functions.fetchWeekInfo
@@ -29,6 +31,7 @@ class ScheduleViewModel : ViewModel() {
     val isLoading: StateFlow<Boolean> = _isLoading
 
     var selectedGroupId: Int = 0
+    var selectedDate: LocalDate? = null
     var selectedWeekType: String = "Авто"
 
     init {
@@ -60,14 +63,20 @@ class ScheduleViewModel : ViewModel() {
     fun loadLessons() {
         if (selectedGroupId != 0 && _weekInfo.value != null) {
             _isLoading.value = true
-            viewModelScope.launch {  // Use viewModelScope.launch instead of launch
+            viewModelScope.launch {
                 try {
+                    // Определяем номер недели на основе типа недели
                     val weekNumber = when (selectedWeekType) {
                         "Числитель" -> 1
                         "Знаменатель" -> 2
-                        "Авто" ->  if (_weekInfo.value!!.IsWeekOdd) 1 else 2
+                        "Авто" -> {
+                            selectedDate?.let { date ->
+                                if (date.weekOfYear() % 2 != 0) 2 else 1
+                            } ?: 1 // по умолчанию 1, если selectedDate = null
+                        }
                         else -> 1
                     }
+
                     _lessons.value = fetchLessons(selectedGroupId, weekNumber)
                     println("Lessons fetched for group $selectedGroupId and week $weekNumber")
                 } catch (e: Exception) {
@@ -78,14 +87,18 @@ class ScheduleViewModel : ViewModel() {
             }
         }
     }
-
+    fun selectDate(date: LocalDate) {
+        selectedDate = date
+    }
     fun selectGroup(groupId: Int) {
         selectedGroupId = groupId
-        loadLessons()
+        this.loadLessons()
     }
+}
 
-    fun selectWeekType(weekType: String) {
-        selectedWeekType = weekType
-        loadLessons()
-    }
+
+fun LocalDate.weekOfYear(): Int {
+    val startOfYear = LocalDate(this.year, 1, 1)
+    val daysSinceStartOfYear = this.daysUntil(startOfYear)
+    return (daysSinceStartOfYear / 7) + 1
 }
