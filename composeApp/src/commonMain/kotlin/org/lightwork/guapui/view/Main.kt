@@ -5,12 +5,8 @@ import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -18,22 +14,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
-import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.navArgument
 import guapui.composeapp.generated.resources.Res
 import guapui.composeapp.generated.resources.SualBar
-import guapui.composeapp.generated.resources.github
-import guapui.composeapp.generated.resources.telegram
-import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.painterResource
-import org.jetbrains.compose.resources.stringResource
 import org.lightwork.guapui.elements.ExpandableGroupField
-import org.lightwork.guapui.elements.HelperButton
-import org.lightwork.guapui.elements.SocialButton
 import org.lightwork.guapui.models.Group
 import org.lightwork.guapui.providers.SettingsProvider
 import org.lightwork.guapui.viewmodel.CalendarViewModel
@@ -42,7 +30,8 @@ import org.lightwork.guapui.viewmodel.ScheduleViewModel
 
 enum class AppScreen(val title: String) {
     Main(title = "SuaiUI"),
-    Map(title = "Навигатор")
+    Map(title = "Навигатор"),
+    Onboarding(title = "Start")
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -110,11 +99,6 @@ fun ScheduleAppBar(
     )
 }
 
-
-
-
-
-
 @Composable
 fun ScheduleApp(
     settingsProvider: SettingsProvider,
@@ -136,6 +120,20 @@ fun ScheduleApp(
         }
     }
 
+    val isOnboardingCompleted by viewModel.isOnboardingCompleted.collectAsState()
+
+    // Set a default screen in the LaunchedEffect to navigate after initialization
+    LaunchedEffect(isOnboardingCompleted) {
+        if (!isOnboardingCompleted) {
+            // Only navigate after the NavHost is initialized
+            navController.navigate(AppScreen.Onboarding.name) {
+                // Clear the back stack and avoid going back to onboarding
+                popUpTo(AppScreen.Main.name) { inclusive = true }
+            }
+        }
+    }
+
+    // Scaffold should be wrapped around a NavHost to ensure proper navigation graph initialization
     Scaffold(
         topBar = {
             if (!isSplashScreenVisible) {
@@ -154,9 +152,10 @@ fun ScheduleApp(
         }
     ) { innerPadding ->
         Crossfade(targetState = currentScreen, animationSpec = tween(500)) { screen ->
+            // Ensure the NavHost is set up inside the Composable
             NavHost(
                 navController = navController,
-                startDestination = AppScreen.Main.name,
+                startDestination = if (isOnboardingCompleted) AppScreen.Main.name else AppScreen.Onboarding.name,
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(innerPadding)
@@ -172,6 +171,16 @@ fun ScheduleApp(
                         }
                     )
                 }
+                composable(route = AppScreen.Onboarding.name) {
+                    OnboardingScreen(
+                        onComplete = {
+                            viewModel.completeOnboarding()  // Mark onboarding as complete
+                            navController.navigate(AppScreen.Main.name) {
+                                popUpTo(AppScreen.Onboarding.name) { inclusive = true }
+                            }
+                        }
+                    )
+                }
                 composable(route = AppScreen.Map.name) { backStackEntry ->
                     MapPage(navController, mapViewModel)
                 }
@@ -179,3 +188,7 @@ fun ScheduleApp(
         }
     }
 }
+
+
+
+

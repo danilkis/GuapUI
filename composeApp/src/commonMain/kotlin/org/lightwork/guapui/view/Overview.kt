@@ -87,9 +87,6 @@ fun Overview(
         6 to "Суббота",
         7 to "Воскресенье"
     )
-
-    // Determine the current selected day
-    // Determine the current selected day as a day name
     val selectedDayName = selectedDate?.dayOfWeek?.isoDayNumber?.let { dayNames[it] }
     println(selectedDayName)
 
@@ -184,4 +181,3 @@ fun Overview(
         }
     }
 }
-
