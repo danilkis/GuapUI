@@ -9,8 +9,5 @@ import org.lightwork.guapui.view.MapPage
 import org.lightwork.guapui.view.Overview
 import org.lightwork.guapui.view.ScheduleApp
 
-@Composable
-fun App() {
-    val isDarkTheme = isSystemInDarkTheme()
-    AppTheme(isDarkTheme, false, { ScheduleApp() })
-}
+@Composable expect
+fun App()

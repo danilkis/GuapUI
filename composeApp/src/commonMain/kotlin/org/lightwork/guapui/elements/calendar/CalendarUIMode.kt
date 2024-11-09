@@ -16,7 +16,22 @@ data class CalendarUiModel(
         val isSelected: Boolean,
         val isToday: Boolean
     ) {
-        // Replace `DateTimeFormatter.ofPattern("E")` with string formatting for day abbreviations
-        val day: String = date.dayOfWeek.name.take(3) // "Mon", "Tue", etc.
+        // Replace English day abbreviations with Russian ones
+        val day: String = getDayAbbreviation(date.dayOfWeek)
     }
 }
+
+// Helper function to get Russian abbreviation of the day
+fun getDayAbbreviation(dayOfWeek: DayOfWeek): String {
+    return when (dayOfWeek) {
+        DayOfWeek.MONDAY -> "ПН"
+        DayOfWeek.TUESDAY -> "ВТ"
+        DayOfWeek.WEDNESDAY -> "СР"
+        DayOfWeek.THURSDAY -> "ЧТ"
+        DayOfWeek.FRIDAY -> "ПТ"
+        DayOfWeek.SATURDAY -> "СБ"
+        DayOfWeek.SUNDAY -> "ВС"
+        else -> TODO()
+    }
+}
+

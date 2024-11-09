@@ -2,6 +2,8 @@ package org.lightwork.guapui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.russhwolf.settings.Settings
+import com.russhwolf.settings.set
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -15,8 +17,19 @@ import org.lightwork.guapui.functions.fetchWeekInfo
 import org.lightwork.guapui.models.Day
 import org.lightwork.guapui.models.Group
 import org.lightwork.guapui.models.WeekInfo
+import org.lightwork.guapui.providers.SettingsProvider
 
-class ScheduleViewModel : ViewModel() {
+class ScheduleViewModel(private val settingsProvider: SettingsProvider) : ViewModel() {
+    private val settings: Settings = settingsProvider.getSettings()
+
+    private val _isOnboardingCompleted = MutableStateFlow(settings.getBoolean("onboarding_completed", false))
+    val isOnboardingCompleted: StateFlow<Boolean> = _isOnboardingCompleted
+
+
+    fun completeOnboarding() {
+        settings["onboarding_completed"] = true
+        _isOnboardingCompleted.value = true
+    }
 
     private val _groups = MutableStateFlow<List<Group>?>(null)
     val groups: StateFlow<List<Group>?> = _groups
@@ -30,7 +43,7 @@ class ScheduleViewModel : ViewModel() {
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading
 
-    var selectedGroupId: Int = 0
+    var selectedGroupId: Int = settings.getInt("selected_group_id", 1032)
     var selectedDate: LocalDate? = null
     var selectedWeekType: String = "Авто"
 
@@ -91,8 +104,9 @@ class ScheduleViewModel : ViewModel() {
         selectedDate = date
     }
     fun selectGroup(groupId: Int) {
+        settings.putInt("selected_group_id", groupId)
         selectedGroupId = groupId
-        this.loadLessons()
+        loadLessons()
     }
 }
 

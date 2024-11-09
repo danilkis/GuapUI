@@ -60,6 +60,7 @@ kotlin {
                 implementation(compose.material3)
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.1")
                 implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.6.1")
+                implementation("com.russhwolf:multiplatform-settings:1.2.0")
                 implementation("org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-compose:2.8.0")
                 implementation("org.jetbrains.androidx.navigation:navigation-compose:2.7.0-alpha07")
             }
@@ -69,6 +70,7 @@ kotlin {
             dependencies {
                 implementation("io.ktor:ktor-client-js-wasm-js:3.0.0-beta-2")
                 implementation("io.ktor:ktor-http-wasm-js:3.0.0-beta-2")
+                implementation("com.russhwolf:multiplatform-settings:1.2.0")
             }
         }
 

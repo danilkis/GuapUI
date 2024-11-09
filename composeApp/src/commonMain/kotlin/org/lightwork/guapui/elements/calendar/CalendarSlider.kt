@@ -31,6 +31,7 @@ import kotlinx.coroutines.launch
 import kotlinx.datetime.*
 import org.lightwork.guapui.viewmodel.CalendarViewModel
 import androidx.compose.runtime.remember
+import androidx.compose.ui.text.intl.Locale
 
 @Composable
 fun CalendarSlider(
@@ -65,10 +66,8 @@ fun CalendarSlider(
         if (firstVisibleDate != null) {
             val newMonth = firstVisibleDate.date.month
             if (newMonth == displayedMonth) {
-                // If we're still in the same month, calculate the week in the month
                 weekInMonth = (listState.firstVisibleItemIndex / 7) + 1
             } else {
-                // If the month changes, reset to show only the month
                 displayedMonth = newMonth
                 weekInMonth = 1
             }
@@ -88,17 +87,13 @@ fun CalendarSlider(
             displayedMonth = displayedMonth,
             weekInMonth = weekInMonth,
             onPrevClick = {
-                //weekOffset -= 1
                 coroutineScope.launch {
-                    // Прокручиваем на 7 элементов назад или до начала списка, если индекс отрицательный
                     val targetIndex = (listState.firstVisibleItemIndex - 7).coerceAtLeast(0)
                     listState.animateScrollToItem(targetIndex)
                 }
             },
             onNextClick = {
-                //weekOffset += 1
                 coroutineScope.launch {
-                    // Прокручиваем на 7 элементов вперёд или до конца списка, если индекс превышает лимит
                     val targetIndex = (listState.firstVisibleItemIndex + 7).coerceAtMost(calendarUiModel.visibleDates.size - 1)
                     listState.animateScrollToItem(targetIndex)
                 }
@@ -113,8 +108,6 @@ fun CalendarSlider(
     }
 }
 
-
-
 @Composable
 fun Header(
     displayedMonth: Month,
@@ -122,8 +115,8 @@ fun Header(
     onPrevClick: () -> Unit,
     onNextClick: () -> Unit
 ) {
-      val monthDisplayName = displayedMonth.name.lowercase()
-    val headerText = monthDisplayName
+    val monthDisplayName = displayedMonth.name.lowercase() // Localize month name in Russian
+    val headerText = monthDisplayName.capitalize()
 
     Row(modifier = Modifier.fillMaxWidth()) {
         Crossfade(targetState = headerText) { text ->
@@ -152,6 +145,7 @@ fun Header(
         }
     }
 }
+
 // Helper function to get the correct plural form of "week" in Russian
 fun getWeeksLabel(weeks: Int): String {
     val lastDigit = weeks % 10

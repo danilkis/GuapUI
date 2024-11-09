@@ -31,8 +31,11 @@ import guapui.composeapp.generated.resources.telegram
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
+import org.lightwork.guapui.elements.ExpandableGroupField
 import org.lightwork.guapui.elements.HelperButton
 import org.lightwork.guapui.elements.SocialButton
+import org.lightwork.guapui.models.Group
+import org.lightwork.guapui.providers.SettingsProvider
 import org.lightwork.guapui.viewmodel.CalendarViewModel
 import org.lightwork.guapui.viewmodel.MapViewModel
 import org.lightwork.guapui.viewmodel.ScheduleViewModel
@@ -48,25 +51,46 @@ fun ScheduleAppBar(
     currentScreen: AppScreen,
     canNavigateBack: Boolean,
     navigateUp: () -> Unit,
+    groups: List<Group>?,  // Add groups parameter
+    selectedGroupId: Int?,  // Pass selectedGroupId to the field
+    onGroupSelected: (Int) -> Unit,  // Callback to handle group selection
     modifier: Modifier = Modifier
 ) {
     TopAppBar(
         title = {
-            if (currentScreen.title == "SuaiUI") {
-                Row(Modifier.fillMaxWidth().padding(8.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(16.dp))
-                {
-                    Image(
-                        painter = painterResource(Res.drawable.SualBar),
-                        contentDescription = "SuaiUI Logo",
-                        modifier = Modifier
-                            .padding(4.dp).size(70.dp) // Add padding to give some space around it
-                    )
-                    SocialButton("https://github.com/danilkis/GuapUI", Res.drawable.github)
-                    SocialButton("https://t.me/SuaiMultiplatform", Res.drawable.telegram)
-                    HelperButton()
+            Box(Modifier.fillMaxWidth()) {  // Wrap content in a Box for dropdown expansion
+                if (currentScreen.title == "SuaiUI") {
+                    Row(
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(8.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        Image(
+                            painter = painterResource(Res.drawable.SualBar),
+                            contentDescription = "SuaiUI Logo",
+                            modifier = Modifier
+                                .padding(4.dp)
+                                .size(70.dp)
+                        )
+                        // Display the ExpandableGroupField in the top bar
+                        groups?.let {
+                            Box(Modifier.weight(1f)) {  // Allow the field to take up available space
+                                ExpandableGroupField(
+                                    items = it,
+                                    label = "Группа",
+                                    selectedGroupId = selectedGroupId, // Pass selectedGroupId
+                                    onItemSelected = { id ->
+                                        onGroupSelected(id)  // Handle group selection
+                                    }
+                                )
+                            }
+                        }
+                    }
+                } else {
+                    Text(currentScreen.title)
                 }
-            } else {
-                Text(currentScreen.title)
             }
         },
         colors = TopAppBarDefaults.mediumTopAppBarColors(
@@ -87,22 +111,24 @@ fun ScheduleAppBar(
 }
 
 
+
+
+
+
 @Composable
 fun ScheduleApp(
-    viewModel: ScheduleViewModel = viewModel { ScheduleViewModel() },
+    settingsProvider: SettingsProvider,
+    viewModel: ScheduleViewModel = viewModel { ScheduleViewModel(settingsProvider) },
     navController: NavHostController = rememberNavController(),
     mapViewModel: MapViewModel = viewModel { MapViewModel() },
     calendarViewModel: CalendarViewModel = viewModel { CalendarViewModel() }
 ) {
-    // Track whether the splash screen is visible
     var isSplashScreenVisible by remember { mutableStateOf(true) }
-
-    // Get current back stack entry
     val backStackEntry by navController.currentBackStackEntryAsState()
-    // Get the name of the current screen
-    val currentScreen = AppScreen.valueOf(
-        backStackEntry?.destination?.route ?: AppScreen.Main.name
-    )
+    val currentScreen = AppScreen.valueOf(backStackEntry?.destination?.route ?: AppScreen.Main.name)
+
+    // Collect the group data from the viewModel
+    val groups by viewModel.groups.collectAsState()
 
     LaunchedEffect(currentScreen) {
         if (currentScreen != AppScreen.Map) {
@@ -117,6 +143,11 @@ fun ScheduleApp(
                     currentScreen = currentScreen,
                     canNavigateBack = navController.previousBackStackEntry != null,
                     navigateUp = { navController.navigateUp() },
+                    groups = groups,  // Pass the groups data
+                    selectedGroupId = viewModel.selectedGroupId,  // Pass selectedGroupId
+                    onGroupSelected = { id ->
+                        viewModel.selectGroup(id)  // Handle group selection
+                    },
                     modifier = Modifier.animateContentSize(animationSpec = tween(durationMillis = 300))
                 )
             }
@@ -148,4 +179,3 @@ fun ScheduleApp(
         }
     }
 }
-

@@ -97,8 +97,6 @@ fun Overview(
     val filteredLessons = lessons?.filter { it.dayName == selectedDayName }
 
     Column(Modifier.background(MaterialTheme.colorScheme.background)) {
-        CalendarSlider(viewModel = calendarViewModel) // Pass the CalendarViewModel to CalendarSlider
-
         // Splash screen visibility
         AnimatedVisibility(
             visible = isSplashScreenVisible,
@@ -126,20 +124,7 @@ fun Overview(
             enter = slideInHorizontally(animationSpec = tween(300)) + fadeIn(),
             exit = slideOutHorizontally(animationSpec = tween(300)) + fadeOut()
         ) {
-            LazyRow(
-                modifier = Modifier
-                    .scrollable(orientation = Orientation.Horizontal, state = rememberScrollState())
-                    .fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                item {
-                    groups?.let {
-                        ExpandableGroupField(it, "Группа", onItemSelected = { id ->
-                            viewModel.selectGroup(id)
-                        })
-                    }
-                }
-            }
+            CalendarSlider(viewModel = calendarViewModel) // Pass the CalendarViewModel to CalendarSlider
         }
 
         AnimatedVisibility(
