@@ -1,11 +1,13 @@
 package org.lightwork.guapui
 
+import NoteViewModel
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Surface
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Edit
 import androidx.compose.material.icons.rounded.Home
 import androidx.compose.material.icons.rounded.Person
 import androidx.compose.material.icons.rounded.Place
@@ -14,12 +16,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import kotlinx.coroutines.launch
+import kotlinx.datetime.LocalDate
 import org.lightwork.guapui.functions.fetchLessonBuildingNaviUrl
 import org.lightwork.guapui.functions.fetchLessonRoomNaviUrl
 import org.lightwork.guapui.models.Lesson
@@ -234,7 +238,17 @@ fun LessonEntry(lesson: Lesson, navController: NavController, mapViewModel: MapV
                             label = { Text(lesson.building, color = MaterialTheme.colorScheme.onSurface) }
                         )
                     }
+                    val NoteVM = NoteViewModel()
+                    IconButton(onClick = {
+                        // Open the note dialog when pencil icon is clicked
+                        coroutineScope.launch { NoteVM.saveNoteToSupabase() } //TODO: Тест на добавление записи
 
+                    }) {
+                        Icon(
+                            imageVector = Icons.Rounded.Edit,
+                            contentDescription = "Add Note"
+                        )
+                    }
                     // Display the break information if it exists and should be shown
                     if (lesson.showBreak && lesson.breakTime != null) {
                         Box(
