@@ -67,6 +67,7 @@ kotlin {
                 implementation("io.github.jan-tennert.supabase:postgrest-kt:3.0.1")
                 implementation("io.github.jan-tennert.supabase:storage-kt:3.0.1")
                 implementation("io.github.jan-tennert.supabase:compose-auth-ui:3.0.1")
+                implementation("io.github.jan-tennert.supabase:compose-auth:3.0.1")
             }
         }
 

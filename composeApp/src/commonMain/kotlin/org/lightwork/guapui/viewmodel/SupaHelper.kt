@@ -1,13 +1,58 @@
-package org.lightwork.guapui.viewmodel
+package org.lightwork.guapui.helper
 
 import io.github.jan.supabase.auth.Auth
 import io.github.jan.supabase.auth.auth
+import io.github.jan.supabase.auth.providers.builtin.Email
+import io.github.jan.supabase.auth.user.UserInfo
+import io.github.jan.supabase.auth.user.UserSession
+import io.github.jan.supabase.compose.auth.ComposeAuth
+import io.github.jan.supabase.compose.auth.googleNativeLogin
 import io.github.jan.supabase.createSupabaseClient
+import io.github.jan.supabase.postgrest.Postgrest
+import kotlinx.coroutines.*
 
-class SupaHelper {
-    val supabase = createSupabaseClient(supabaseUrl = "https://vjfdmvrkriajftklozgf.supabase.co", supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZqZmRtdnJrcmlhamZ0a2xvemdmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzA4MzYyMTUsImV4cCI6MjA0NjQxMjIxNX0.RgDjBvwNacNVLK2vqCt-2i-0kx6MaSKEUUWokfc_fcc") {}
+class SupabaseHelper(supabaseUrl: String, supabaseKey: String) {
+    public val base = createSupabaseClient(supabaseUrl, supabaseKey) {
+        install(Auth)
+        install(Postgrest)
+        install(ComposeAuth) {
+            googleNativeLogin(serverClientId = "530606051062-du7jddpftfuk7u1o1e487d0rer3d890d.apps.googleusercontent.com")
+        }
+    }
 
-    public fun fetchAuth(): Auth {
-        return supabase.auth
+    private val auth = base.auth
+
+    // Sign up method that returns UserInfo?
+    suspend fun signUp(userMail: String, userPassword: String) {
+       auth.signUpWith(Email) {
+            email = userMail
+            password = userPassword
+        }
+    }
+
+    suspend fun signOut() {
+        withContext(Dispatchers.Unconfined) {
+            try {
+                auth.signOut()
+                delay(100) // Небольшая задержка, чтобы избежать конфликтов
+                base.auth.refreshCurrentSession()
+            } catch (e: Exception) {
+                e.printStackTrace() // Для отладки ошибки отмены запроса
+            }
+        }
+    }
+
+    // Sign in method that returns UserInfo?
+    suspend fun signIn(userMail: String, userPassword: String) {
+        val userInfo = auth.signInWith(Email) {
+            email = userMail
+            password = userPassword
+        }
+        //return base.auth.currentAccessTokenOrNull() // JWT token
+    }
+
+    // Method to get the current JWT token
+    fun getJwtToken(): String? {
+        return base.auth.currentAccessTokenOrNull()
     }
 }

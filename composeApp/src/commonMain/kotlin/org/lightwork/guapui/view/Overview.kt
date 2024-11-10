@@ -23,9 +23,7 @@ import kotlinx.datetime.isoDayNumber
 import org.lightwork.guapui.elements.DayCard
 import org.lightwork.guapui.elements.ShimmeringCard
 import org.lightwork.guapui.elements.calendar.CalendarSlider
-import org.lightwork.guapui.viewmodel.CalendarViewModel
-import org.lightwork.guapui.viewmodel.MapViewModel
-import org.lightwork.guapui.viewmodel.ScheduleViewModel
+import org.lightwork.guapui.viewmodel.*
 
 @Composable
 fun Overview(
@@ -33,7 +31,9 @@ fun Overview(
     navController: NavController,
     mapViewModel: MapViewModel,
     onSplashScreenVisibilityChanged: (Boolean) -> Unit,
-    calendarViewModel: CalendarViewModel
+    calendarViewModel: CalendarViewModel,
+    noteViewModel: NoteViewModel,
+    authViewmodel: AuthViewModel
 ) {
     // Observe the selected date from the CalendarViewModel
     val selectedDate by calendarViewModel.selectedDate.collectAsState()
@@ -132,7 +132,7 @@ fun Overview(
                         modifier = Modifier.alpha(1f) // No fading required as it’s the final state
                     ) {
                         items(filteredLessons) { lessonDay ->
-                            DayCard(lessonDay.lessons, lessonDay.dayName, navController, mapViewModel)
+                            DayCard(lessonDay.lessons, lessonDay.dayName, navController, mapViewModel, scheduleViewModel = viewModel, calendarViewModel = calendarViewModel, noteViewModel = noteViewModel, authViewModel = authViewmodel)
                         }
                     }
                 }

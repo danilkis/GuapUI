@@ -15,10 +15,10 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import org.lightwork.guapui.LessonEntry
 import org.lightwork.guapui.models.Lesson
-import org.lightwork.guapui.viewmodel.MapViewModel
+import org.lightwork.guapui.viewmodel.*
 
 @Composable
-fun DayCard(lessons: List<Lesson>?, label: String, navController: NavController, mapViewmodel: MapViewModel) {
+fun DayCard(lessons: List<Lesson>?, label: String, navController: NavController, mapViewmodel: MapViewModel, scheduleViewModel: ScheduleViewModel, calendarViewModel: CalendarViewModel, noteViewModel: NoteViewModel, authViewModel: AuthViewModel) {
     if (lessons == null) {  // Show shimmer effect if lessons are null (loading state)
         ShimmeringCard(modifier = Modifier.fillMaxWidth().padding(8.dp))
         return
@@ -32,7 +32,7 @@ fun DayCard(lessons: List<Lesson>?, label: String, navController: NavController,
                 Text(label, style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onPrimary)
             }
             lessons.forEach {
-                LessonEntry(it, navController, mapViewmodel)
+                LessonEntry(it, navController, mapViewmodel, scheduleViewModel, calendarViewModel, noteViewModel, authViewModel = authViewModel)
             }
         }
     }

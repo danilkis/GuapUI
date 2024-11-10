@@ -1,79 +1,118 @@
+package org.lightwork.guapui.viewmodel
+
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import io.github.jan.supabase.auth.Auth
-import io.github.jan.supabase.createSupabaseClient
-import io.github.jan.supabase.postgrest.Postgrest
+import io.github.jan.supabase.auth.auth
+import io.github.jan.supabase.auth.status.SessionSource
+import io.github.jan.supabase.auth.status.SessionStatus
 import io.github.jan.supabase.postgrest.from
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.selects.select
-import kotlinx.datetime.LocalDate
-import org.lightwork.guapui.models.Lesson
+import kotlinx.datetime.*
 import org.lightwork.guapui.models.Note
+import org.lightwork.guapui.helper.SupabaseHelper
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
+
+
 
 class NoteViewModel : ViewModel() {
+    private val supabaseHelper = SupabaseHelper(
+        supabaseUrl = "https://vjfdmvrkriajftklozgf.supabase.co",
+        supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZqZmRtdnJrcmlhamZ0a2xvemdmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzA4MzYyMTUsImV4cCI6MjA0NjQxMjIxNX0.RgDjBvwNacNVLK2vqCt-2i-0kx6MaSKEUUWokfc_fcc"
+    )
 
-    // State to track whether the note dialog is open
-    private val _isNoteDialogOpen = MutableStateFlow(false)
-    val isNoteDialogOpen: StateFlow<Boolean> = _isNoteDialogOpen
+    private var jwtToken: String? = null
 
-    // State to track the selected lesson for which the note is being created
-    private val _selectedLesson = MutableStateFlow<Lesson?>(null)
-    val selectedLesson: StateFlow<Lesson?> = _selectedLesson
+    // State for note dialog, selected lesson, etc.
 
-    // State to track the current note text
-    private val _noteText = MutableStateFlow("")
-    val noteText: StateFlow<String> = _noteText
-
-    // Function to open the note dialog for a selected lesson
-    fun openNoteDialog(lesson: Lesson) {
-        _selectedLesson.value = lesson
-        _isNoteDialogOpen.value = true
-    }
-
-    // Function to close the note dialog
-    fun closeNoteDialog() {
-        _isNoteDialogOpen.value = false
-        _selectedLesson.value = null
-        _noteText.value = ""
-    }
-
-    // Function to update the note text as the user types
-    fun updateNoteText(newText: String) {
-        _noteText.value = newText
-    }
-
-    // Function to save the note in Supabase (or other backend)
-    fun saveNoteToDatabase() {
-        val lesson = _selectedLesson.value ?: return
-        val note = _noteText.value
-
+    // Функция для получения отфильтрованных заметок по group, date и lessonNumber
+    fun getFilteredNotes(
+        group: String,
+        date: LocalDate,
+        lessonNumber: Int,
+        onResult: (List<Note>) -> Unit
+    ) {
         viewModelScope.launch {
             try {
-                // Call Supabase API to save the note (or your backend logic)
-                //saveNoteToSupabase(Note(null, lesson.number, date, note, null, group))
+                val notes = supabaseHelper.base.from("notes").select{
+                    filter{
+                        eq("group", group)
+                        eq("date", date.toString()) // Преобразуем дату в строку для запроса
+                        eq("lessonNumber", lessonNumber)
+                    }
+                }
+                    .decodeList<Note>() // Декодируем ответ как список Note
 
-                // Once saved, close the dialog
-                closeNoteDialog()
+                onResult(notes) // Возвращаем отфильтрованный список через callback
             } catch (e: Exception) {
-                // Handle error
                 e.printStackTrace()
+                onResult(emptyList()) // Возвращаем пустой список в случае ошибки
             }
         }
     }
 
-    // This is just a placeholder function for the actual saving logic to Supabase
-    //TODO: Тест на добавление записи
-    public suspend fun saveNoteToSupabase(note: Note = Note(0, 1, LocalDate.parse("2024-11-12"),"This is a test", "7f56e6b9-1e27-4ab8-ae9e-3623348cfa66", "4441" )) {
-        val db = createSupabaseClient(supabaseUrl = "https://vjfdmvrkriajftklozgf.supabase.co", supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZqZmRtdnJrcmlhamZ0a2xvemdmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzA4MzYyMTUsImV4cCI6MjA0NjQxMjIxNX0.RgDjBvwNacNVLK2vqCt-2i-0kx6MaSKEUUWokfc_fcc")
-        {
-            install(Auth)
-            install(Postgrest)
+    fun deleteNote(noteId: String) {
+        viewModelScope.launch {
+            try {
+                val result = supabaseHelper.base.from("notes").delete { filter { eq("id", noteId) }}
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
         }
-        val result = db.from("notes").insert(note) {
-            select()
-        }.decodeSingle<Note>()
+    }
+    // Function to save the note to Supabase
+    @OptIn(ExperimentalUuidApi::class)
+    fun saveNote(
+        note: Note = Note(
+            "",
+            Clock.System.now().toLocalDateTime(TimeZone.UTC),
+            1,
+            LocalDate.parse("2024-11-12"),
+            "This is a test",
+            "",
+            "4441",
+            "Test Title"
+        )
+    ) {
+        viewModelScope.launch {
+            try {
+                // Use the JWT token for the request
+                println(
+                    mapOf(
+                        "id" to Uuid.random().toString(),
+                        "created_at" to note.created_at,
+                        "lessonNumber" to note.lessonNumber,
+                        "date" to note.date.toString(),
+                        "text" to note.text,
+                        "user_uuid" to supabaseHelper.base.auth.retrieveUser(
+                            supabaseHelper.base.auth.currentAccessTokenOrNull()
+                                .toString()
+                        ).id,  // Or pass the user UUID if required
+                        "group" to note.group,
+                        "title" to note.title
+                    ).toString()
+                )
+                val result = supabaseHelper.base.from("notes").insert(
+                    Note(
+                        Uuid.random().toString(), note.created_at, note.lessonNumber, note.date, note.text,
+                        supabaseHelper.base.auth.retrieveUser(
+                            supabaseHelper.base.auth.currentAccessTokenOrNull().toString()
+                        ).id,
+                        note.group, note.title
+                    )
+                ).decodeList<Note>() // Using decodeList if you expect an array
+                if (result.isNotEmpty()) {
+                    println("Note added successfully")
+                } else {
+                    println("No result returned")
+                }
+                println(result) // Log the response to inspect it
+                // Handle result (e.g., success message or further processing)
 
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
     }
 }

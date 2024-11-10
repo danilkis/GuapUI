@@ -8,6 +8,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -43,7 +44,7 @@ fun ScheduleAppBar(
     groups: List<Group>?,
     selectedGroupId: Int?,
     onGroupSelected: (Int) -> Unit,
-    onNavigateToAccount: () -> Unit, // Add a callback for account navigation
+    onNavigateToAccount: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -81,16 +82,18 @@ fun ScheduleAppBar(
                         onItemSelected = { id -> onGroupSelected(id) }
                     )
                 }
+                Spacer(modifier = Modifier.weight(1f))
+                IconButton(onClick = onNavigateToAccount) {
+                    Icon(
+                        imageVector = Icons.Filled.AccountCircle,
+                        contentDescription = "Account",
+                        modifier = Modifier
+                            .padding(4.dp)
+                            .size(90.dp)
+                    )
+                }
             } else {
                 Text(currentScreen.title, style = MaterialTheme.typography.titleMedium)
-            }
-
-            // Add the person icon to navigate to the account page
-            IconButton(onClick = onNavigateToAccount) {
-                Icon(
-                    imageVector = Icons.Filled.Person,
-                    contentDescription = "Account"
-                )
             }
         }
     }
@@ -105,6 +108,8 @@ fun ScheduleApp(
     navController: NavHostController = rememberNavController(),
     mapViewModel: MapViewModel = viewModel { MapViewModel() },
     calendarViewModel: CalendarViewModel = viewModel { CalendarViewModel() },
+    noteViewmodel: NoteViewModel = viewModel { NoteViewModel() },
+    authViewModel: AuthViewModel = viewModel { AuthViewModel() },
 ) {
     var isSplashScreenVisible by remember { mutableStateOf(true) }
     val backStackEntry by navController.currentBackStackEntryAsState()
@@ -155,7 +160,7 @@ fun ScheduleApp(
                 startDestination = if (isOnboardingCompleted) AppScreen.Main.name else AppScreen.Onboarding.name,
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(innerPadding)
+                    .padding(4.dp,innerPadding.calculateTopPadding() + 4.dp, 4.dp, 4.dp)
             ) {
                 composable(route = AppScreen.Main.name) {
                     Overview(
@@ -163,6 +168,8 @@ fun ScheduleApp(
                         navController = navController,
                         mapViewModel = mapViewModel,
                         calendarViewModel = calendarViewModel,
+                        noteViewModel = noteViewmodel,
+                        authViewmodel = authViewModel,
                         onSplashScreenVisibilityChanged = { isVisible ->
                             isSplashScreenVisible = isVisible
                         }
@@ -182,7 +189,7 @@ fun ScheduleApp(
                     MapPage(navController, mapViewModel)
                 }
                 composable(route = AppScreen.Account.name) {
-                    AccountPage(navController) // Add the Account page composable
+                    AccountPage(navController, authViewModel) // Add the Account page composable
                 }
             }
         }

@@ -16,8 +16,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.unit.dp
+import guapui.composeapp.generated.resources.*
 import guapui.composeapp.generated.resources.Res
-import guapui.composeapp.generated.resources.apple_logo
 import guapui.composeapp.generated.resources.beta
 import guapui.composeapp.generated.resources.guap_calendar
 import kotlinx.coroutines.launch
@@ -31,7 +31,8 @@ fun OnboardingScreen(onComplete: () -> Unit) {
     val pages: List<@Composable () -> Unit> = listOf(
         { OnboardingPage1() },
         { OnboardingPage2() },
-        { OnboardingPage3() }
+        { OnboardingPage3() },
+        { OnboardingPage4() },
     )
     val pagerState = rememberPagerState(
         initialPage = 0,
@@ -86,7 +87,7 @@ fun OnboardingScreen(onComplete: () -> Unit) {
 fun OnboardingPage1() {
     OnboardingPageWithContent(
         title = "Добро пожаловать!",
-        text = "SuaiUI это простенький сайт для просмотра расписания, создания заметок и напоминалок к парам",
+        text = "SuaiUI — это простой инструмент для просмотра расписания, создания заметок и напоминаний для занятий.",
         svgResource = Res.drawable.guap_calendar
     )
 }
@@ -94,19 +95,29 @@ fun OnboardingPage1() {
 @Composable
 fun OnboardingPage2() {
     OnboardingPageWithContent(
-        title = "Мы еще в тестируемся",
-        text = "Этот сайтик я пишу в одного, и разработчик я немного рукожопый, если будут проблемы пишите в тг SuaiMultiplatform",
+        title = "Мы еще тестируемся",
+        text = "Этот сайт разрабатывается одним человеком и находится в стадии бета-тестирования. Если вы заметите ошибки или столкнулись с проблемами, пожалуйста, сообщите об этом в Telegram: @SuaiMultiplatform.",
         svgResource = Res.drawable.beta,
-        iconTint = MaterialTheme.colorScheme.secondary
+        iconTint = MaterialTheme.colorScheme.primary
     )
 }
 
 @Composable
 fun OnboardingPage3() {
     OnboardingPageWithContent(
+        title = "Заметки",
+        text = "Функция добавления заметок к парам позволяет вам сохранять важную информацию, связанную с парами. Все заметки синхронизируются между устройствами, чтобы вы могли легко получить доступ к ним в любом месте. Для использования этой функции необходимо войти в аккаунт или создать новый.",
+        svgResource = Res.drawable.notes,
+        iconTint = MaterialTheme.colorScheme.secondary // Step 2: Set primary color as tint
+    )
+}
+
+@Composable
+fun OnboardingPage4() {
+    OnboardingPageWithContent(
         title = "iOS и Mac",
-        text = "Сайт работает на iOS и Mac, но только на последних бета версиях. Как только будет готово все для приложения, будет постик в тг. Спасибо за внимание и приятного пользования!",
-        svgResource = Res.drawable.apple_logo,
+        text = "Сайт работает на iOS и macOS (поддерживаются только последние бета-версии). Когда приложение будет полностью готово, мы сообщим об этом в Telegram. Спасибо за внимание и приятного пользования!",
+        svgResource = Res.drawable.apple,
         iconTint = MaterialTheme.colorScheme.tertiary // Step 2: Set primary color as tint
     )
 }
