@@ -73,7 +73,7 @@ kotlin {
 
         val wasmJsMain by getting {
             dependencies {
-                implementation("io.ktor:ktor-client-js-wasm-js:3.0.0-beta-2")
+                implementation("io.ktor:ktor-client-js-wasm-js:3.0.0-rc-1")
                 implementation("io.ktor:ktor-http-wasm-js:3.0.0-beta-2")
                 implementation("com.russhwolf:multiplatform-settings:1.2.0")
             }

@@ -186,7 +186,9 @@ fun AccountPage(
             OutlinedButton(
                 onClick = {
                     coroutineScope.launch {
-                        authViewModel.supabaseHelper.base.auth.signInWith(Github)
+                        kotlin.runCatching {
+                            authViewModel.supabaseHelper.base.auth.signInWith(Github)
+                        }
                     }
                 },
                 content = {

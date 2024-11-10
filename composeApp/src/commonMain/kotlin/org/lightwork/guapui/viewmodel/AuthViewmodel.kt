@@ -64,6 +64,11 @@ class AuthViewModel : ViewModel() {
         }
     }
 
+    fun checkUrl(url: String) {
+        viewModelScope.launch {
+            supabaseHelper.handleOAuthRedirect(url)
+        }
+    }
     // Sign in method that returns JWT token
     suspend fun signIn(userMail: String, userPassword: String) {
         supabaseHelper.signIn(userMail, userPassword)

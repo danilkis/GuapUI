@@ -104,6 +104,7 @@ fun ScheduleAppBar(
 @Composable
 fun ScheduleApp(
     settingsProvider: SettingsProvider,
+    url: String,
     viewModel: ScheduleViewModel = viewModel { ScheduleViewModel(settingsProvider) },
     navController: NavHostController = rememberNavController(),
     mapViewModel: MapViewModel = viewModel { MapViewModel() },
@@ -111,6 +112,8 @@ fun ScheduleApp(
     noteViewmodel: NoteViewModel = viewModel { NoteViewModel() },
     authViewModel: AuthViewModel = viewModel { AuthViewModel() },
 ) {
+    println(url)
+    authViewModel.checkUrl(url)
     var isSplashScreenVisible by remember { mutableStateOf(true) }
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentScreen = AppScreen.valueOf(backStackEntry?.destination?.route ?: AppScreen.Main.name)
