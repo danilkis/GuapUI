@@ -63,6 +63,10 @@ kotlin {
                 implementation("com.russhwolf:multiplatform-settings:1.2.0")
                 implementation("org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-compose:2.8.0")
                 implementation("org.jetbrains.androidx.navigation:navigation-compose:2.7.0-alpha07")
+                implementation("io.github.jan-tennert.supabase:auth-kt:3.0.1")
+                implementation("io.github.jan-tennert.supabase:postgrest-kt:3.0.1")
+                implementation("io.github.jan-tennert.supabase:storage-kt:3.0.1")
+                implementation("io.github.jan-tennert.supabase:compose-auth-ui:3.0.1")
             }
         }
 

@@ -1,6 +1,7 @@
 package org.lightwork.guapui.models
 
-import kotlinx.serialization.*
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
 // Really stripped since I don't care much about other fields
 @Serializable

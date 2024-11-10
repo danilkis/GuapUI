@@ -18,8 +18,15 @@ import org.lightwork.guapui.models.Lesson
 import org.lightwork.guapui.viewmodel.MapViewModel
 
 @Composable
-fun DayCard(lessons: List<Lesson>, label: String, navController: NavController, mapViewmodel: MapViewModel) {
-    Card(Modifier.padding(8.dp).shadow(4.dp, shape = MaterialTheme.shapes.medium).background(MaterialTheme.colorScheme.surfaceContainer)) {
+fun DayCard(lessons: List<Lesson>?, label: String, navController: NavController, mapViewmodel: MapViewModel) {
+    if (lessons == null) {  // Show shimmer effect if lessons are null (loading state)
+        ShimmeringCard(modifier = Modifier.fillMaxWidth().padding(8.dp))
+        return
+    }
+
+    Card(
+        Modifier.padding(8.dp).shadow(4.dp, shape = MaterialTheme.shapes.medium).background(MaterialTheme.colorScheme.surfaceContainer)
+    ) {
         Column(Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surfaceContainer)) {
             Row(Modifier.background(MaterialTheme.colorScheme.primary).fillMaxWidth().padding(8.dp)) {
                 Text(label, style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onPrimary)

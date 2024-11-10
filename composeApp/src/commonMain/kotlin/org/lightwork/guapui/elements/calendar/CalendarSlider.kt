@@ -3,9 +3,7 @@ package org.lightwork.guapui.elements.calendar
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.animateContentSize
-import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.animation.core.spring
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyListState
@@ -28,10 +26,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
-import kotlinx.datetime.*
+import kotlinx.datetime.DatePeriod
+import kotlinx.datetime.Month
+import kotlinx.datetime.minus
+import kotlinx.datetime.plus
 import org.lightwork.guapui.viewmodel.CalendarViewModel
-import androidx.compose.runtime.remember
-import androidx.compose.ui.text.intl.Locale
 
 @Composable
 fun CalendarSlider(
@@ -108,6 +107,14 @@ fun CalendarSlider(
     }
 }
 
+fun Month.getDisplayNameInRussian(): String {
+    val monthsInRussian = listOf(
+        "Январь", "Февраль", "Март", "Апрель", "Май", "Июнь",
+        "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"
+    )
+    return monthsInRussian[this.ordinal]
+}
+
 @Composable
 fun Header(
     displayedMonth: Month,
@@ -115,13 +122,13 @@ fun Header(
     onPrevClick: () -> Unit,
     onNextClick: () -> Unit
 ) {
-    val monthDisplayName = displayedMonth.name.lowercase() // Localize month name in Russian
+    val monthDisplayName = displayedMonth.getDisplayNameInRussian()
     val headerText = monthDisplayName.capitalize()
 
     Row(modifier = Modifier.fillMaxWidth()) {
         Crossfade(targetState = headerText) { text ->
             Text(
-                text = "$text ($monthDisplayName)",
+                text = "$text",
                 modifier = Modifier
                     .weight(1f)
                     .align(Alignment.CenterVertically),
@@ -186,14 +193,19 @@ fun ContentItem(
     isSelected: Boolean,
     onClick: () -> Unit
 ) {
-    // Animate the color transition based on the selection state
+    // Animate the color transition based on the selection state for the container
     val containerColor by animateColorAsState(
-        targetValue = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary
+        targetValue = if (isSelected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.tertiaryContainer
     )
 
     // Animate the shape's corner size based on selection state
     val shapeCornerSize by animateDpAsState(
         targetValue = if (isSelected) 16.dp else 4.dp
+    )
+
+    // Animate the text color change when the item is selected or not
+    val textColor by animateColorAsState(
+        targetValue = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onTertiaryContainer
     )
 
     Card(
@@ -216,13 +228,14 @@ fun ContentItem(
             Text(
                 text = date.day,
                 modifier = Modifier.align(Alignment.CenterHorizontally),
-                style = MaterialTheme.typography.bodySmall
+                style = MaterialTheme.typography.bodySmall.copy(color = textColor) // Apply text color here
             )
             Text(
                 text = date.date.dayOfMonth.toString(),
                 modifier = Modifier.align(Alignment.CenterHorizontally),
                 style = MaterialTheme.typography.bodyMedium.copy(
-                    fontSize = if (isSelected) 23.sp else 16.sp
+                    fontSize = if (isSelected) 23.sp else 16.sp,
+                    color = textColor // Apply text color here
                 ),
             )
         }

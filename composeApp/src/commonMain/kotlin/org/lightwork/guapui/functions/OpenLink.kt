@@ -2,7 +2,6 @@ package org.lightwork.guapui.functions
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalUriHandler
-import androidx.compose.ui.platform.UriHandler
 import androidx.navigation.NavController
 import org.lightwork.guapui.getPlatform
 

@@ -11,20 +11,18 @@ import androidx.compose.material.icons.rounded.Person
 import androidx.compose.material.icons.rounded.Place
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.text.style.TextAlign
-import org.lightwork.guapui.models.Lesson
-import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.LocalUriHandler
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import kotlinx.coroutines.launch
 import org.lightwork.guapui.functions.fetchLessonBuildingNaviUrl
 import org.lightwork.guapui.functions.fetchLessonRoomNaviUrl
+import org.lightwork.guapui.models.Lesson
 import org.lightwork.guapui.viewmodel.MapViewModel
 
 @OptIn(ExperimentalLayoutApi::class)

@@ -1,55 +1,28 @@
 package org.lightwork.guapui.view
 
 import androidx.compose.animation.*
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
-import androidx.compose.foundation.gestures.Orientation
-import androidx.compose.foundation.gestures.scrollable
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyRow
-
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.runtime.*
-import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.unit.dp
-import com.example.guap02.screen.element.ExpandableWeekField
-import org.lightwork.guapui.elements.DayCard
-import org.lightwork.guapui.elements.ExpandableGroupField
-import androidx.compose.animation.core.*
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.lazy.staggeredgrid.items
-import androidx.compose.material.DropdownMenu
-import androidx.compose.material.DropdownMenuItem
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.runtime.collectAsState
-import androidx.compose.ui.draw.scale
-import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.platform.LocalUriHandler
-import androidx.compose.ui.unit.DpOffset
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import androidx.navigation.NavHostController
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
-import guapui.composeapp.generated.resources.Guap_logo
-import guapui.composeapp.generated.resources.Res
-import kotlinx.datetime.LocalDate
-import kotlinx.datetime.daysUntil
 import kotlinx.datetime.isoDayNumber
-import org.jetbrains.compose.resources.painterResource
-import org.lightwork.guapui.Platform
-import org.lightwork.guapui.elements.HelperButton
+import org.lightwork.guapui.elements.DayCard
+import org.lightwork.guapui.elements.ShimmeringCard
 import org.lightwork.guapui.elements.calendar.CalendarSlider
-import org.lightwork.guapui.getPlatform
 import org.lightwork.guapui.viewmodel.CalendarViewModel
 import org.lightwork.guapui.viewmodel.MapViewModel
 import org.lightwork.guapui.viewmodel.ScheduleViewModel
@@ -60,7 +33,7 @@ fun Overview(
     navController: NavController,
     mapViewModel: MapViewModel,
     onSplashScreenVisibilityChanged: (Boolean) -> Unit,
-    calendarViewModel: CalendarViewModel // Add the CalendarViewModel parameter
+    calendarViewModel: CalendarViewModel
 ) {
     // Observe the selected date from the CalendarViewModel
     val selectedDate by calendarViewModel.selectedDate.collectAsState()
@@ -71,12 +44,14 @@ fun Overview(
     val isLoading by viewModel.isLoading.collectAsState()
     val isSplashScreenVisible = groups == null || weekInfo == null
     onSplashScreenVisibilityChanged(isSplashScreenVisible)
+
     LaunchedEffect(selectedDate, viewModel.selectedGroupId) {
         selectedDate?.let {
             viewModel.selectDate(selectedDate!!)
             viewModel.loadLessons()  // Передаем выбранную дату
         }
     }
+
     // Get day names for comparison
     val dayNames = mapOf(
         1 to "Понедельник",
@@ -124,40 +99,24 @@ fun Overview(
             CalendarSlider(viewModel = calendarViewModel) // Pass the CalendarViewModel to CalendarSlider
         }
 
-        AnimatedVisibility(
-            visible = isLoading,
-            enter = fadeIn(animationSpec = tween(durationMillis = 300)),
-            exit = fadeOut(animationSpec = tween(durationMillis = 300))
-        ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(60.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                androidx.compose.material3.CircularProgressIndicator(
-                    modifier = Modifier
-                        .size(48.dp)
-                        .padding(8.dp)
-                )
+        Crossfade(targetState = isLoading) { loading ->
+            if (loading) {
+                // Show the shimmer loader
+                LazyVerticalStaggeredGrid(
+                    columns = StaggeredGridCells.Adaptive(400.dp),
+                    modifier = Modifier.alpha(1f) // Keep shimmer visible
+                ) {
+                    items(1)
+                    {
+                        ShimmeringCard()
+                    }
+                }
             }
-        }
-
-        val alpha by animateFloatAsState(
-            targetValue = if (!isLoading && filteredLessons != null) 1f else 0f,
-            animationSpec = tween(durationMillis = 300)
-        )
-
-        Box(modifier = Modifier.fillMaxSize()) {
-            this@Column.AnimatedVisibility(
-                visible = !isLoading && filteredLessons != null,
-                enter = fadeIn(animationSpec = tween(durationMillis = 300)),
-                exit = fadeOut(animationSpec = tween(durationMillis = 300))
-            ) {
+            else {
+                // Show actual content when loading is done
                 if (filteredLessons.isNullOrEmpty()) {
                     // Display the "No lessons" message
-                    Box(modifier = Modifier.fillMaxSize())
-                    {
+                    Box(modifier = Modifier.fillMaxSize()) {
                         Text(
                             text = "На этот день пар нет, ура!",
                             style = MaterialTheme.typography.titleLarge,
@@ -170,7 +129,7 @@ fun Overview(
                 } else {
                     LazyVerticalStaggeredGrid(
                         columns = StaggeredGridCells.Adaptive(400.dp),
-                        modifier = Modifier.alpha(alpha)
+                        modifier = Modifier.alpha(1f) // No fading required as it’s the final state
                     ) {
                         items(filteredLessons) { lessonDay ->
                             DayCard(lessonDay.lessons, lessonDay.dayName, navController, mapViewModel)
@@ -181,3 +140,4 @@ fun Overview(
         }
     }
 }
+

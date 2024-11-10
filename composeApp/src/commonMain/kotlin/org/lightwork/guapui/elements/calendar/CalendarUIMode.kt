@@ -1,6 +1,6 @@
 package org.lightwork.guapui.elements.calendar
 
-import kotlinx.datetime.*
+import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.LocalDate
 
 data class CalendarUiModel(

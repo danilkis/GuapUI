@@ -1,8 +1,6 @@
 package org.lightwork.guapui.elements.calendar
 
 import kotlinx.datetime.*
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.Clock
 
 class CalendarDataSource {
 

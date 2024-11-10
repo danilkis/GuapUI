@@ -4,9 +4,11 @@ import androidx.compose.animation.Crossfade
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -31,62 +33,31 @@ import org.lightwork.guapui.viewmodel.ScheduleViewModel
 enum class AppScreen(val title: String) {
     Main(title = "SuaiUI"),
     Map(title = "Навигатор"),
-    Onboarding(title = "Start")
+    Onboarding(title = "Start"),
+    Account(title = "Аккаунт")
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ScheduleAppBar(
     currentScreen: AppScreen,
     canNavigateBack: Boolean,
     navigateUp: () -> Unit,
-    groups: List<Group>?,  // Add groups parameter
-    selectedGroupId: Int?,  // Pass selectedGroupId to the field
-    onGroupSelected: (Int) -> Unit,  // Callback to handle group selection
+    groups: List<Group>?,
+    selectedGroupId: Int?,
+    onGroupSelected: (Int) -> Unit,
+    onNavigateToAccount: () -> Unit, // Add a callback for account navigation
     modifier: Modifier = Modifier
 ) {
-    TopAppBar(
-        title = {
-            Box(Modifier.fillMaxWidth()) {  // Wrap content in a Box for dropdown expansion
-                if (currentScreen.title == "SuaiUI") {
-                    Row(
-                        Modifier
-                            .fillMaxWidth()
-                            .padding(8.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(16.dp)
-                    ) {
-                        Image(
-                            painter = painterResource(Res.drawable.SualBar),
-                            contentDescription = "SuaiUI Logo",
-                            modifier = Modifier
-                                .padding(4.dp)
-                                .size(70.dp)
-                        )
-                        // Display the ExpandableGroupField in the top bar
-                        groups?.let {
-                            Box(Modifier.weight(1f)) {  // Allow the field to take up available space
-                                ExpandableGroupField(
-                                    items = it,
-                                    label = "Группа",
-                                    selectedGroupId = selectedGroupId, // Pass selectedGroupId
-                                    onItemSelected = { id ->
-                                        onGroupSelected(id)  // Handle group selection
-                                    }
-                                )
-                            }
-                        }
-                    }
-                } else {
-                    Text(currentScreen.title)
-                }
-            }
-        },
-        colors = TopAppBarDefaults.mediumTopAppBarColors(
-            containerColor = MaterialTheme.colorScheme.primaryContainer
-        ),
-        modifier = modifier,
-        navigationIcon = {
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.primaryContainer)
+            .padding(8.dp)
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
             if (canNavigateBack) {
                 IconButton(onClick = navigateUp) {
                     Icon(
@@ -95,9 +66,39 @@ fun ScheduleAppBar(
                     )
                 }
             }
+
+            if (currentScreen.title == "SuaiUI") {
+                Image(
+                    painter = painterResource(Res.drawable.SualBar),
+                    contentDescription = "SuaiUI Logo",
+                    modifier = Modifier
+                        .padding(4.dp)
+                        .size(70.dp)
+                )
+                groups?.let {
+                    ExpandableGroupField(
+                        items = it,
+                        label = "Группа",
+                        selectedGroupId = selectedGroupId,
+                        onItemSelected = { id -> onGroupSelected(id) }
+                    )
+                }
+            } else {
+                Text(currentScreen.title, style = MaterialTheme.typography.titleMedium)
+            }
+
+            // Add the person icon to navigate to the account page
+            IconButton(onClick = onNavigateToAccount) {
+                Icon(
+                    imageVector = Icons.Filled.Person,
+                    contentDescription = "Account"
+                )
+            }
         }
-    )
+    }
 }
+
+
 
 @Composable
 fun ScheduleApp(
@@ -122,18 +123,16 @@ fun ScheduleApp(
 
     val isOnboardingCompleted by viewModel.isOnboardingCompleted.collectAsState()
 
-    // Set a default screen in the LaunchedEffect to navigate after initialization
-    LaunchedEffect(isOnboardingCompleted) {
-        if (!isOnboardingCompleted) {
-            // Only navigate after the NavHost is initialized
-            navController.navigate(AppScreen.Onboarding.name) {
-                // Clear the back stack and avoid going back to onboarding
-                popUpTo(AppScreen.Main.name) { inclusive = true }
+    LaunchedEffect(isOnboardingCompleted, navController) {
+        navController.currentBackStackEntryFlow.collect { backStack ->
+            if (!isOnboardingCompleted && backStack.destination.route != AppScreen.Onboarding.name) {
+                navController.navigate(AppScreen.Onboarding.name) {
+                    popUpTo(AppScreen.Main.name) { inclusive = true }
+                }
             }
         }
     }
 
-    // Scaffold should be wrapped around a NavHost to ensure proper navigation graph initialization
     Scaffold(
         topBar = {
             if (!isSplashScreenVisible) {
@@ -141,10 +140,11 @@ fun ScheduleApp(
                     currentScreen = currentScreen,
                     canNavigateBack = navController.previousBackStackEntry != null,
                     navigateUp = { navController.navigateUp() },
-                    groups = groups,  // Pass the groups data
-                    selectedGroupId = viewModel.selectedGroupId,  // Pass selectedGroupId
-                    onGroupSelected = { id ->
-                        viewModel.selectGroup(id)  // Handle group selection
+                    groups = groups,
+                    selectedGroupId = viewModel.selectedGroupId,
+                    onGroupSelected = { id -> viewModel.selectGroup(id) },
+                    onNavigateToAccount = {
+                        navController.navigate(AppScreen.Account.name) // Navigate to the account screen
                     },
                     modifier = Modifier.animateContentSize(animationSpec = tween(durationMillis = 300))
                 )
@@ -152,7 +152,6 @@ fun ScheduleApp(
         }
     ) { innerPadding ->
         Crossfade(targetState = currentScreen, animationSpec = tween(500)) { screen ->
-            // Ensure the NavHost is set up inside the Composable
             NavHost(
                 navController = navController,
                 startDestination = if (isOnboardingCompleted) AppScreen.Main.name else AppScreen.Onboarding.name,
@@ -174,20 +173,25 @@ fun ScheduleApp(
                 composable(route = AppScreen.Onboarding.name) {
                     OnboardingScreen(
                         onComplete = {
-                            viewModel.completeOnboarding()  // Mark onboarding as complete
+                            viewModel.completeOnboarding()
                             navController.navigate(AppScreen.Main.name) {
                                 popUpTo(AppScreen.Onboarding.name) { inclusive = true }
                             }
                         }
                     )
                 }
-                composable(route = AppScreen.Map.name) { backStackEntry ->
+                composable(route = AppScreen.Map.name) {
                     MapPage(navController, mapViewModel)
+                }
+                composable(route = AppScreen.Account.name) {
+                    AccountPage() // Add the Account page composable
                 }
             }
         }
     }
 }
+
+
 
 
 
