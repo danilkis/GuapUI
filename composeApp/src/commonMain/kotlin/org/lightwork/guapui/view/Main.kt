@@ -26,9 +26,7 @@ import org.jetbrains.compose.resources.painterResource
 import org.lightwork.guapui.elements.ExpandableGroupField
 import org.lightwork.guapui.models.Group
 import org.lightwork.guapui.providers.SettingsProvider
-import org.lightwork.guapui.viewmodel.CalendarViewModel
-import org.lightwork.guapui.viewmodel.MapViewModel
-import org.lightwork.guapui.viewmodel.ScheduleViewModel
+import org.lightwork.guapui.viewmodel.*
 
 enum class AppScreen(val title: String) {
     Main(title = "SuaiUI"),
@@ -106,7 +104,7 @@ fun ScheduleApp(
     viewModel: ScheduleViewModel = viewModel { ScheduleViewModel(settingsProvider) },
     navController: NavHostController = rememberNavController(),
     mapViewModel: MapViewModel = viewModel { MapViewModel() },
-    calendarViewModel: CalendarViewModel = viewModel { CalendarViewModel() }
+    calendarViewModel: CalendarViewModel = viewModel { CalendarViewModel() },
 ) {
     var isSplashScreenVisible by remember { mutableStateOf(true) }
     val backStackEntry by navController.currentBackStackEntryAsState()
@@ -184,7 +182,7 @@ fun ScheduleApp(
                     MapPage(navController, mapViewModel)
                 }
                 composable(route = AppScreen.Account.name) {
-                    AccountPage() // Add the Account page composable
+                    AccountPage(navController) // Add the Account page composable
                 }
             }
         }

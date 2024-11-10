@@ -8,8 +8,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
-import dev.datlag.kcef.KCEF
-import dev.datlag.kcef.KCEF.init
+// import dev.datlag.kcef.KCEF
+// import dev.datlag.kcef.KCEF.init
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.lightwork.guapui.view.SplashScreen
@@ -47,62 +47,63 @@ fun main(args: Array<String>) = application {
                     }
                 }
 
-                init(builder = {
-                    installDir(appInstallDir)
-                    progress {
-                        onDownloading {
-                            downloading = max(it, 0F)
-                            println(downloading)
-                        }
-                        onInitialized {
-                            initialized = true
-                        }
-                    }
-                    settings {
-                        val cacheDir = when {
-                            System.getProperty("os.name").contains("Mac") -> {
-                                File(appSupportDir, "cache").absolutePath
-                            }
+                // Commented out KCEF initialization
+                // init(builder = {
+                //     installDir(appInstallDir)
+                //     progress {
+                //         onDownloading {
+                //             downloading = max(it, 0F)
+                //             println(downloading)
+                //         }
+                //         onInitialized {
+                //             initialized = true
+                //         }
+                //     }
+                //     settings {
+                //         val cacheDir = when {
+                //             System.getProperty("os.name").contains("Mac") -> {
+                //                 File(appSupportDir, "cache").absolutePath
+                //             }
 
-                            System.getProperty("os.name").contains("Windows") -> {
-                                val appInstallPath = File(System.getProperty("user.dir"))
-                                File(
-                                    appInstallPath,
-                                    "cache"
-                                ).absolutePath // Store cache in the same directory as the app
-                            }
+                //             System.getProperty("os.name").contains("Windows") -> {
+                //                 val appInstallPath = File(System.getProperty("user.dir"))
+                //                 File(
+                //                     appInstallPath,
+                //                     "cache"
+                //                 ).absolutePath // Store cache in the same directory as the app
+                //             }
 
-                            else -> {
-                                File("cache").absolutePath // Fallback for other OS
-                            }
-                        }
-                        cachePath = cacheDir
-                    }
-                }, onError = {
-                    if (it != null) {
-                        it.printStackTrace()
-                    }
-                }, onRestartRequired = {
-                    restartRequired = true
-                })
+                //             else -> {
+                //                 File("cache").absolutePath // Fallback for other OS
+                //             }
+                //         }
+                //         cachePath = cacheDir
+                //     }
+                // }, onError = {
+                //     if (it != null) {
+                //         it.printStackTrace()
+                //     }
+                // }, onRestartRequired = {
+                //     restartRequired = true
+                // })
             }
         }
 
-    if (restartRequired) {
-        AppTheme(isDarkTheme, false, { WebLoadingScreen(0f, "Что-то пошло не так, свяжитесь с разработчиком") })
-    } else {
-        if (initialized) {
-            // Display the main app when initialized
-            App()
-        } else {
-            AppTheme(isDarkTheme, false, { WebLoadingScreen(downloading) })
-        }
-    }
+        //if (restartRequired) {
+        //    AppTheme(isDarkTheme, false, { WebLoadingScreen(0f, "Что-то пошло не так, свяжитесь с разработчиком") })
+        //} else {
+        //    if (initialized) {
+                // Display the main app when initialized
+                App()
+           // } else {
+          //      AppTheme(isDarkTheme, false, { WebLoadingScreen(downloading) })
+          //  }
+       // }
 
-    DisposableEffect(Unit) {
-        onDispose {
-            KCEF.disposeBlocking()
-        }
+        //DisposableEffect(Unit) {
+        //    onDispose {
+                // KCEF.disposeBlocking() // Commented out
+        //    }
+        //}
     }
-}
 }
