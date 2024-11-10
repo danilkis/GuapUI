@@ -33,9 +33,10 @@ import io.github.jan.supabase.auth.user.UserInfo
 import io.github.jan.supabase.compose.auth.composable.NativeSignInResult
 import io.github.jan.supabase.compose.auth.composable.rememberSignInWithGoogle
 import io.github.jan.supabase.compose.auth.composeAuth
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.jetbrains.compose.resources.painterResource
 import org.lightwork.guapui.viewmodel.AuthStatus
-
 
 @OptIn(AuthUiExperimental::class, ExperimentalMaterial3Api::class)
 @Composable
@@ -55,7 +56,7 @@ fun AccountPage(
         onResult = { result ->
             when (result) {
                 is NativeSignInResult.Success -> {
-                    navController.popBackStack() // Navigate back after successful login
+                    // No navigation, just remain on the page
                 }
 
                 is NativeSignInResult.Error -> {
@@ -91,15 +92,15 @@ fun AccountPage(
             ) {
                 Text("Email: ${user.email}")
                 Text("Провайдер: ${user.identities?.get(0)?.provider}")
-                Text("Запись созданна: ${user.identities?.get(0)?.createdAt}")
+                Text("Запись создана: ${user.identities?.get(0)?.createdAt}")
                 Text("Последний вход: ${user.identities?.get(0)?.lastSignInAt}")
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Button(onClick = {
                     corutineScope.launch {
                         authViewModel.signOut()
-                    }
-                    navController.popBackStack() // Navigate back after logout
+                        navController.popBackStack()
+                    } // Navigate back after logout
                 }) {
                     Text("Выйти")
                 }
@@ -112,10 +113,6 @@ fun AccountPage(
         var isLoginMode by remember { mutableStateOf(true) }
         var isLoading by remember { mutableStateOf(false) }
         val coroutineScope = rememberCoroutineScope()
-
-        // State for showing the alert dialog
-        var showDialog by remember { mutableStateOf(false) }
-        var errorMessage by remember { mutableStateOf("") }
 
         Column(
             modifier = Modifier
@@ -150,14 +147,16 @@ fun AccountPage(
                 onClick = {
                     isLoading = true
                     coroutineScope.launch {
-                        val userInfo = if (isLoginMode) {
-                            authViewModel.signIn(email, password)
-                        } else {
-                            authViewModel.signUp(email, password)
+                        val userInfo = withContext(Dispatchers.Default) {
+                            if (isLoginMode) {
+                                authViewModel.signIn(email, password)
+                            } else {
+                                authViewModel.signUp(email, password)
+                            }
                         }
                         isLoading = false
                         userInfo?.let {
-                            navController.popBackStack()
+                            // No navigation, just show data after success
                         }
                     }
                 },

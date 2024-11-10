@@ -34,10 +34,10 @@ class SupabaseHelper(supabaseUrl: String, supabaseKey: String) {
         withContext(Dispatchers.Unconfined) {
             try {
                 auth.signOut()
-                delay(100) // Небольшая задержка, чтобы избежать конфликтов
-                base.auth.refreshCurrentSession()
+                delay(100)
+                
             } catch (e: Exception) {
-                e.printStackTrace() // Для отладки ошибки отмены запроса
+                e.printStackTrace() // For debugging purposes
             }
         }
     }
