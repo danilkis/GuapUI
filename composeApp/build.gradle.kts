@@ -1,5 +1,6 @@
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
+import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.targets.js.webpack.KotlinWebpackConfig
 
@@ -19,6 +20,7 @@ repositories {
 }
 
 kotlin {
+    @OptIn(ExperimentalWasmDsl::class)
     wasmJs {
         moduleName = "composeApp"
         browser {
@@ -48,6 +50,7 @@ kotlin {
     sourceSets {
         val commonMain by getting {
             dependencies {
+                api(compose.materialIconsExtended)
                 implementation(compose.runtime)
                 implementation(compose.foundation)
                 implementation(compose.material)
@@ -68,6 +71,8 @@ kotlin {
                 implementation("io.github.jan-tennert.supabase:storage-kt:3.0.1")
                 implementation("io.github.jan-tennert.supabase:compose-auth-ui:3.0.1")
                 implementation("io.github.jan-tennert.supabase:compose-auth:3.0.1")
+                implementation("com.mohamedrejeb.richeditor:richeditor-compose:1.0.0-rc09")
+                implementation(compose.materialIconsExtended)
             }
         }
 
@@ -81,6 +86,8 @@ kotlin {
 
         val androidMain by getting {
             dependencies {
+                runtimeOnly(libs.androidx.material.icons.extended)
+                implementation(libs.androidx.material.icons.extended)
                 implementation(compose.preview)
                 implementation(libs.androidx.activity.compose)
                 implementation(libs.ktor.client.okhttp) // This will be ignored in WASM

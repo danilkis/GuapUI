@@ -26,6 +26,7 @@ import guapui.composeapp.generated.resources.SualBar
 import guapui.composeapp.generated.resources.guap_calendar
 import org.jetbrains.compose.resources.painterResource
 import org.lightwork.guapui.elements.ExpandableGroupField
+import org.lightwork.guapui.helper.SupabaseHelper
 import org.lightwork.guapui.models.Group
 import org.lightwork.guapui.providers.SettingsProvider
 import org.lightwork.guapui.viewmodel.*
@@ -104,14 +105,15 @@ fun ScheduleAppBar(
 
 @Composable
 fun ScheduleApp(
+    supabaseHelper: SupabaseHelper,
     settingsProvider: SettingsProvider,
     url: String,
     viewModel: ScheduleViewModel = viewModel { ScheduleViewModel(settingsProvider) },
     navController: NavHostController = rememberNavController(),
     mapViewModel: MapViewModel = viewModel { MapViewModel() },
     calendarViewModel: CalendarViewModel = viewModel { CalendarViewModel() },
-    noteViewmodel: NoteViewModel = viewModel { NoteViewModel() },
-    authViewModel: AuthViewModel = viewModel { AuthViewModel() },
+    noteViewmodel: NoteViewModel = viewModel { NoteViewModel(supabaseHelper) },
+    authViewModel: AuthViewModel = viewModel { AuthViewModel(supabaseHelper) },
 ) {
     println(url)
     authViewModel.checkUrl(url)

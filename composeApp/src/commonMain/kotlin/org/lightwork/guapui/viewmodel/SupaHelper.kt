@@ -92,7 +92,12 @@ class SupabaseHelper(supabaseUrl: String, supabaseKey: String) {
             email = userMail
             password = userPassword
         }
-        //return base.auth.currentAccessTokenOrNull() // JWT token
+        val jwtToken = auth.currentAccessTokenOrNull()
+        if (jwtToken != null) {
+            println("JWT Token: $jwtToken")
+        } else {
+            println("JWT Token not found after sign-in")
+        }
     }
 
     // Method to get the current JWT token

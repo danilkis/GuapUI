@@ -17,13 +17,7 @@ enum class AuthStatus {
     SIGN_OUT
 }
 
-class AuthViewModel : ViewModel() {
-
-    val supabaseHelper = SupabaseHelper(
-        supabaseUrl = "https://vjfdmvrkriajftklozgf.supabase.co",
-        supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZqZmRtdnJrcmlhamZ0a2xvemdmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzA4MzYyMTUsImV4cCI6MjA0NjQxMjIxNX0.RgDjBvwNacNVLK2vqCt-2i-0kx6MaSKEUUWokfc_fcc"
-    )
-
+class AuthViewModel(public val supabaseHelper: SupabaseHelper): ViewModel(){
     val authStatus = MutableStateFlow(AuthStatus.INITIALIZING)
 
     init {

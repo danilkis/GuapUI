@@ -10,3 +10,6 @@ import org.lightwork.guapui.view.ScheduleApp
 //    val isDarkTheme = isSystemInDarkTheme()
 //    AppTheme(isDarkTheme, false, { ScheduleApp(settingsProvider = SettingsProvider()) })
 //}
+@Composable
+actual fun App(url: String) {
+}

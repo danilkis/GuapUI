@@ -1,11 +1,16 @@
 package org.lightwork.guapui
 
+import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.selection.TextSelectionColors
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.Surface
+import androidx.compose.material.TextFieldColors
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.*
@@ -26,13 +31,21 @@ import org.lightwork.guapui.functions.fetchLessonRoomNaviUrl
 import org.lightwork.guapui.models.Lesson
 import androidx.compose.runtime.*
 import androidx.compose.ui.text.input.TextFieldValue
+import com.mohamedrejeb.richeditor.annotation.ExperimentalRichTextApi
+import com.mohamedrejeb.richeditor.model.rememberRichTextState
+import com.mohamedrejeb.richeditor.ui.material.OutlinedRichTextEditor
+import com.mohamedrejeb.richeditor.ui.material.RichText
 import kotlinx.datetime.Clock
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
+import org.lightwork.guapui.elements.editor.RichEditorContent
+import org.lightwork.guapui.elements.editor.RichTextStyleRow
 import org.lightwork.guapui.models.Note
 import org.lightwork.guapui.viewmodel.*
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class, ExperimentalMaterialApi::class,
+    ExperimentalRichTextApi::class
+)
 @Composable
 fun LessonEntry(
     lesson: Lesson,
@@ -48,39 +61,69 @@ fun LessonEntry(
 
     // State для управления нижним листом
     var noteTitle by remember { mutableStateOf(TextFieldValue()) }
-    var isViewNoteDialogOpen by remember { mutableStateOf(false) }
     var noteText by remember { mutableStateOf(TextFieldValue()) }
     var hasNote by remember { mutableStateOf(false) }
     var existingNote by remember { mutableStateOf<Note?>(null) }
-    var isDialogOpen by remember { mutableStateOf(false) }
+    var isNoteSheetVisible by remember { mutableStateOf(false) }
+    var isViewNoteSheetVisible by remember { mutableStateOf(false) }
+    var dataLoading by remember { mutableStateOf(true) }
     val authStatus by authViewModel.authStatus.collectAsState()
+    val EditSheetState = rememberModalBottomSheetState()
+    val ViewSheetState = rememberModalBottomSheetState()
+    val richTextState = rememberRichTextState()
+    val outlinedRichTextState = rememberRichTextState()
 
-    val teritaryChipColor = ChipColors(MaterialTheme.colorScheme.tertiaryContainer, MaterialTheme.colorScheme.onTertiaryContainer,
-        MaterialTheme.colorScheme.tertiary, MaterialTheme.colorScheme.tertiary, MaterialTheme.colorScheme.surfaceDim, MaterialTheme.colorScheme.onSurfaceVariant, MaterialTheme.colorScheme.onSurfaceVariant, MaterialTheme.colorScheme.onSurfaceVariant)
+    val teritaryChipColor = ChipColors(
+        MaterialTheme.colorScheme.tertiaryContainer,
+        MaterialTheme.colorScheme.onTertiaryContainer,
+        MaterialTheme.colorScheme.tertiary,
+        MaterialTheme.colorScheme.tertiary,
+        MaterialTheme.colorScheme.surfaceDim,
+        MaterialTheme.colorScheme.onSurfaceVariant,
+        MaterialTheme.colorScheme.onSurfaceVariant,
+        MaterialTheme.colorScheme.onSurfaceVariant
+    )
 
-    val secondaryChipColors = ChipColors(MaterialTheme.colorScheme.secondaryContainer, MaterialTheme.colorScheme.onSecondaryContainer,
-        MaterialTheme.colorScheme.secondary, MaterialTheme.colorScheme.secondary, MaterialTheme.colorScheme.surfaceDim, MaterialTheme.colorScheme.onSurfaceVariant, MaterialTheme.colorScheme.onSurfaceVariant, MaterialTheme.colorScheme.onSurfaceVariant)
+    val secondaryChipColors = ChipColors(
+        MaterialTheme.colorScheme.secondaryContainer,
+        MaterialTheme.colorScheme.onSecondaryContainer,
+        MaterialTheme.colorScheme.secondary,
+        MaterialTheme.colorScheme.secondary,
+        MaterialTheme.colorScheme.surfaceDim,
+        MaterialTheme.colorScheme.onSurfaceVariant,
+        MaterialTheme.colorScheme.onSurfaceVariant,
+        MaterialTheme.colorScheme.onSurfaceVariant
+    )
 
-    val primaryChipColors = ChipColors(MaterialTheme.colorScheme.primaryContainer, MaterialTheme.colorScheme.onPrimaryContainer,
-        MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.onPrimaryContainer, MaterialTheme.colorScheme.surfaceDim, MaterialTheme.colorScheme.onSurfaceVariant, MaterialTheme.colorScheme.onSurfaceVariant, MaterialTheme.colorScheme.onSurfaceVariant)
+    val primaryChipColors = ChipColors(
+        MaterialTheme.colorScheme.primaryContainer,
+        MaterialTheme.colorScheme.onPrimaryContainer,
+        MaterialTheme.colorScheme.primary,
+        MaterialTheme.colorScheme.onPrimaryContainer,
+        MaterialTheme.colorScheme.surfaceDim,
+        MaterialTheme.colorScheme.onSurfaceVariant,
+        MaterialTheme.colorScheme.onSurfaceVariant,
+        MaterialTheme.colorScheme.onSurfaceVariant
+    )
 
-
-    if (authStatus == AuthStatus.AUTHENTICATED) {
-        LaunchedEffect(calendarViewModel.selectedDate, lesson.number, scheduleViewModel.selectedGroupId) {
+    LaunchedEffect(calendarViewModel.selectedDate, lesson.number, scheduleViewModel.selectedGroupId) {
+        if (authStatus == AuthStatus.AUTHENTICATED) {
             calendarViewModel.selectedDate?.let { date ->
                 date.value?.let {
+                    // Collect from the flow returned by getFilteredNotes
                     noteViewModel.getFilteredNotes(
                         group = scheduleViewModel.selectedGroupId.toString(),
                         date = it,
                         lessonNumber = lesson.number
-                    ) { notes ->
+                    ).collect { notes ->
                         if (notes.isNotEmpty()) {
                             hasNote = true
-                            existingNote = notes.first()
+                            existingNote = notes.first() // Update the existing note
                         } else {
                             hasNote = false
                             existingNote = null
                         }
+                        dataLoading = false
                     }
                 }
             }
@@ -100,59 +143,8 @@ fun LessonEntry(
                     .background(MaterialTheme.colorScheme.surface),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-//                Box(
-//                    modifier = Modifier
-//                        .background(MaterialTheme.colorScheme.surfaceContainer)
-//                        .padding(4.dp)
-//                        .padding(start = 8.dp, end = 8.dp)
-//                        .size(24.dp),
-//                    contentAlignment = Alignment.Center
-//                ) {
-//                    if (lesson.donePercentage != null) {
-//                        val progress = (lesson.donePercentage ?: 100) / 100f
-//                        Box(
-//                            contentAlignment = Alignment.Center,
-//                            modifier = Modifier.size(24.dp)
-//                        ) {
-//                            CircularProgressIndicator(
-//                                progress = { 1f },
-//                                modifier = Modifier.size(24.dp),
-//                                color = MaterialTheme.colorScheme.onPrimary,
-//                                strokeWidth = 2.dp,
-//                            )
-//                            CircularProgressIndicator(
-//                                progress = { progress },
-//                                modifier = Modifier.size(24.dp),
-//                                color = MaterialTheme.colorScheme.primary,
-//                                strokeWidth = 2.dp,
-//                            )
-//                            Text(
-//                                text = lesson.number.toString(),
-//                                style = MaterialTheme.typography.labelLarge,
-//                                color = MaterialTheme.colorScheme.primary,
-//                                modifier = Modifier.align(Alignment.Center)
-//                            )
-//                        }
-//                    } else {
-//                        Box(
-//                            modifier = Modifier
-//                                .size(24.dp)
-//                                .border(2.dp, MaterialTheme.colorScheme.primary, RoundedCornerShape(99.dp)),
-//                            contentAlignment = Alignment.Center
-//                        ) {
-//                            Text(
-//                                text = lesson.number.toString(),
-//                                style = MaterialTheme.typography.labelLarge,
-//                                color = MaterialTheme.colorScheme.primary,
-//                                modifier = Modifier.align(Alignment.Center)
-//                            )
-//                        }
-//                    }
-//                }
-
                 Column(
                     modifier = Modifier
-                        //.background(MaterialTheme.colorScheme.surfaceContainer)
                         .padding(8.dp)
                         .fillMaxWidth()
                 ) {
@@ -194,18 +186,11 @@ fun LessonEntry(
 
                     FlowRow(
                         modifier = Modifier.fillMaxWidth(),
-                        verticalArrangement = Arrangement.spacedBy(4.dp),
+                        verticalArrangement = Arrangement.SpaceEvenly,
                         horizontalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
                         AssistChip(
-                           colors = primaryChipColors,
-                            //                            leadingIcon = {
-//                                Icon(
-//                                    imageVector = Icons.Rounded.Place,
-//                                    contentDescription = "Place icon",
-//                                    tint = MaterialTheme.colorScheme.tertiary
-//                                )
-//                            },
+                            colors = primaryChipColors,
                             onClick = {
                                 coroutineScope.launch {
                                     try {
@@ -238,13 +223,6 @@ fun LessonEntry(
                         )
                         AssistChip(
                             colors = teritaryChipColor,
-//                            leadingIcon = {
-//                                Icon(
-//                                    imageVector = Icons.Rounded.Home,
-//                                    contentDescription = "Home icon",
-//                                    tint = MaterialTheme.colorScheme.tertiary
-//                                )
-//                            },
                             onClick = {
                                 coroutineScope.launch {
                                     try {
@@ -271,14 +249,7 @@ fun LessonEntry(
                         )
                         lesson.teachers.forEach { teacher ->
                             AssistChip(
-                               colors = teritaryChipColor,
-//                                leadingIcon = {
-//                                    Icon(
-//                                        imageVector = Icons.Rounded.Person,
-//                                        contentDescription = "Teacher icon",
-//                                        tint = MaterialTheme.colorScheme.tertiary
-//                                    )
-//                                },
+                                colors = teritaryChipColor,
                                 onClick = {},
                                 label = { Text(teacher, color = MaterialTheme.colorScheme.onTertiaryContainer) }
                             )
@@ -292,32 +263,26 @@ fun LessonEntry(
                                         contentDescription = null,
                                         tint = MaterialTheme.colorScheme.primary
                                     )
-                                              },
+                                },
                                 onClick = {
                                     if (hasNote) {
-                                        // Открытие диалога для просмотра заметки
-                                        isViewNoteDialogOpen = true
+                                        isViewNoteSheetVisible = true
                                     } else {
-                                        // Открытие диалога для добавления новой заметки
-                                        isDialogOpen = true
+                                        isNoteSheetVisible = true
                                     }
-                                          },
+                                },
                                 label = {
-                                    Text(
-                                        if (hasNote) "" else "",
-                                        color = MaterialTheme.colorScheme.onSurface
-                                    )
+                                    //Text("", color = MaterialTheme.colorScheme.onSurface) // No text, just icon
                                 }
                             )
                         }
                     }
-
                 }
             }
             if (lesson.showBreak && lesson.breakTime != null) {
                 Box(
                     modifier = Modifier
-                        .fillMaxWidth() // Reduce padding at the bottom
+                        .fillMaxWidth()
                 ) {
                     HorizontalDivider(
                         Modifier
@@ -326,8 +291,18 @@ fun LessonEntry(
                         thickness = 1.dp,
                         color = MaterialTheme.colorScheme.outlineVariant
                     )
-                    Card(border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline), modifier = Modifier.align(
-                        Alignment.Center), colors = CardColors(containerColor = MaterialTheme.colorScheme.surface, MaterialTheme.colorScheme.outline, MaterialTheme.colorScheme.outline, MaterialTheme.colorScheme.outline))
+                    Card(
+                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
+                        modifier = Modifier.align(
+                            Alignment.Center
+                        ),
+                        colors = CardColors(
+                            containerColor = MaterialTheme.colorScheme.surface,
+                            MaterialTheme.colorScheme.outline,
+                            MaterialTheme.colorScheme.outline,
+                            MaterialTheme.colorScheme.outline
+                        )
+                    )
                     {
                         Text(
                             text = lesson.breakTime ?: "",
@@ -342,104 +317,136 @@ fun LessonEntry(
             }
         }
     }
-    if (isDialogOpen) {
-        AlertDialog(
-            onDismissRequest = { isDialogOpen = false },
-            title = { Text("Добавить заметку", style = MaterialTheme.typography.titleLarge) },
-            text = {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    OutlinedTextField(
-                        value = noteTitle,
-                        onValueChange = { noteTitle = it },
-                        label = { Text("Заголовок") },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(bottom = 8.dp)
-                    )
-                    OutlinedTextField(
-                        value = noteText,
-                        onValueChange = { noteText = it },
-                        label = { Text("Заметка") },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(bottom = 16.dp)
-                    )
-                }
-            },
-            confirmButton = {
-                TextButton(onClick = {
-                    // Создание и сохранение заметки
-                    val newNote = calendarViewModel.selectedDate?.let {
-                        it.value?.let { it1 ->
-                            Note(
-                                id = "",
-                                created_at = Clock.System.now().toLocalDateTime(TimeZone.UTC),
-                                lessonNumber = lesson.number,
-                                date = it1,
-                                text = noteText.text,
-                                user_uuid = "", // Добавьте ID пользователя
-                                group = scheduleViewModel.selectedGroupId.toString(),
-                                title = noteTitle.text
-                            )
-                        }
-                    }
-                    newNote?.let { noteViewModel.saveNote(it) }
 
-                    // Обновление состояния сразу после сохранения заметки
-                    hasNote = true
-                    existingNote = newNote // Сохраняем только что добавленную заметку
-                    isDialogOpen = false
-                }) {
-                    Text("Сохранить")
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { isDialogOpen = false }) {
-                    Text("Отмена")
-                }
-            }
+    @Suppress("DEPRECATION")
+    val textFieldColors2: androidx.compose.material.TextFieldColors =
+        androidx.compose.material.TextFieldDefaults.textFieldColors(
+            textColor = MaterialTheme.colorScheme.onSurface,
+            disabledTextColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
+            backgroundColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.12f),
+            cursorColor = MaterialTheme.colorScheme.primary,
+            errorCursorColor = MaterialTheme.colorScheme.error,
+
+            focusedIndicatorColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f),
+            unfocusedIndicatorColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
+            disabledIndicatorColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f),
+            errorIndicatorColor = MaterialTheme.colorScheme.error,
+
+            leadingIconColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+            disabledLeadingIconColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
+            errorLeadingIconColor = MaterialTheme.colorScheme.error,
+
+            trailingIconColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+            disabledTrailingIconColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
+            errorTrailingIconColor = MaterialTheme.colorScheme.error,
+
+            focusedLabelColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f),
+            unfocusedLabelColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+            disabledLabelColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
+            errorLabelColor = MaterialTheme.colorScheme.error,
+
+            placeholderColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+            disabledPlaceholderColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
         )
-    }
-if (isViewNoteDialogOpen && existingNote != null) {
-    AlertDialog(
-        onDismissRequest = { isViewNoteDialogOpen = false },
-        title = { Text("Заметка: ${existingNote?.title}", style = MaterialTheme.typography.titleLarge) },
-        text = {
-            Column(modifier = Modifier.padding(16.dp)) {
-                Text(
-                    text = "Создано: ${existingNote?.created_at}",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = existingNote?.text ?: "",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-            }
-        },
-        confirmButton = {
-            TextButton(onClick = { isViewNoteDialogOpen = false }) {
-                Text("Закрыть")
-            }
-        },
-        dismissButton = { // This is the new button for deleting the note
-            TextButton(
-                onClick = {
-                    existingNote?.id?.let { noteId ->
-                        noteViewModel.deleteNote(noteId)
-                                // Handle successful deletion
-                                isViewNoteDialogOpen = false
-                                // Update state to reflect that there's no note anymore
-                                hasNote = false
-                                existingNote = null
-                        }
-                    }
+    if (isNoteSheetVisible) {
+        ModalBottomSheet(
+            onDismissRequest = { isNoteSheetVisible = false },
+            sheetState = EditSheetState,
+        ) {
+            Column(
+                modifier = Modifier.padding(16.dp).windowInsetsPadding(WindowInsets.ime)
+                    .fillMaxWidth()
             ) {
-                Text("Удалить")
+                Text("Редактирование заметки", style = MaterialTheme.typography.titleLarge)
+                OutlinedTextField(
+                    value = noteTitle,
+                    onValueChange = { noteTitle = it },
+                    label = { Text("Заголовок") },
+                    modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)
+                )
+                RichTextStyleRow(
+                    modifier = Modifier.fillMaxWidth(),
+                    state = outlinedRichTextState,
+                )
+                OutlinedRichTextEditor(
+                    modifier = Modifier.fillMaxWidth(),
+                    state = outlinedRichTextState,
+                    colors = textFieldColors2,
+                    maxLines = 20,
+                    minLines = 3
+                )
+                Row(horizontalArrangement = Arrangement.End, modifier = Modifier.fillMaxWidth()) {
+                    TextButton(onClick = { isNoteSheetVisible = false }) {
+                        Text("Отменить")
+                    }
+                    TextButton(onClick = {
+                        // Saving new note
+                        val newNote = calendarViewModel.selectedDate?.let {
+                            it.value?.let { it1 ->
+                                Note(
+                                    id = "",
+                                    created_at = Clock.System.now().toLocalDateTime(TimeZone.UTC),
+                                    title = noteTitle.text,
+                                    text = outlinedRichTextState.toHtml(),
+                                    user_uuid = "",
+                                    group = scheduleViewModel.selectedGroupId.toString(),
+                                    lessonNumber = lesson.number,
+                                    date = it1
+                                )
+                            }
+                        }
+                        isViewNoteSheetVisible = false
+                        newNote?.let {
+                            noteViewModel.saveNote(newNote)
+                            hasNote = true // Set the state to show that the note was added
+                            isNoteSheetVisible = false
+                        }
+                    }) {
+                        Text("Готово")
+                    }
+                }
             }
         }
-    )
-}
+    }
+
+
+    if (isViewNoteSheetVisible) {
+        ModalBottomSheet(
+            onDismissRequest = { isViewNoteSheetVisible = false },
+            sheetState = ViewSheetState,
+        ) {
+
+            Column(modifier = Modifier.padding(16.dp)) {
+                Text(existingNote?.title ?: "", style = MaterialTheme.typography.titleLarge)
+                richTextState.setHtml(existingNote?.text ?: "")
+                RichText(
+                    richTextState,
+                    modifier = Modifier.padding(vertical = 8.dp).fillMaxWidth(),
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+
+                Row(horizontalArrangement = Arrangement.End, modifier = Modifier.fillMaxWidth()) {
+                    TextButton(onClick = { isViewNoteSheetVisible = false }) {
+                        Text("Закрыть")
+                    }
+                    TextButton(onClick = {
+                        existingNote?.let { note ->
+                            noteTitle = TextFieldValue(note.title)
+                            isNoteSheetVisible = true  // Open edit sheet
+                        }
+                        existingNote?.text?.let { outlinedRichTextState.setHtml(it) }
+                    }) {
+                        Text("Редактировать")
+                    }
+                    TextButton(onClick = {
+                        existingNote?.let { noteViewModel.deleteNote(it.id) }
+                        isViewNoteSheetVisible = false
+                        hasNote = false // Remove the note
+                    }) {
+                        Text("Удалить")
+                    }
+                }
+            }
+        }
+    }
 }

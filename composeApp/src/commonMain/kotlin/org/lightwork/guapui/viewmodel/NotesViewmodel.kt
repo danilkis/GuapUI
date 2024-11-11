@@ -6,7 +6,11 @@ import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.auth.status.SessionSource
 import io.github.jan.supabase.auth.status.SessionStatus
 import io.github.jan.supabase.postgrest.from
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
 import kotlinx.datetime.*
 import org.lightwork.guapui.models.Note
@@ -15,39 +19,35 @@ import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
 
-
-class NoteViewModel : ViewModel() {
-    private val supabaseHelper = SupabaseHelper(
-        supabaseUrl = "https://vjfdmvrkriajftklozgf.supabase.co",
-        supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZqZmRtdnJrcmlhamZ0a2xvemdmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzA4MzYyMTUsImV4cCI6MjA0NjQxMjIxNX0.RgDjBvwNacNVLK2vqCt-2i-0kx6MaSKEUUWokfc_fcc"
-    )
-
+class NoteViewModel(public val supabaseHelper: SupabaseHelper) : ViewModel() {
     private var jwtToken: String? = null
 
     // State for note dialog, selected lesson, etc.
 
     // Функция для получения отфильтрованных заметок по group, date и lessonNumber
+
     fun getFilteredNotes(
         group: String,
         date: LocalDate,
-        lessonNumber: Int,
-        onResult: (List<Note>) -> Unit
-    ) {
-        viewModelScope.launch {
-            try {
-                val notes = supabaseHelper.base.from("notes").select{
-                    filter{
-                        eq("group", group)
-                        eq("date", date.toString()) // Преобразуем дату в строку для запроса
-                        eq("lessonNumber", lessonNumber)
-                    }
-                }
-                    .decodeList<Note>() // Декодируем ответ как список Note
+        lessonNumber: Int
+    ): Flow<List<Note>> {
+        return flow {
+            while (true) {
+                try {
+                    val notes = supabaseHelper.base.from("notes").select {
+                        filter {
+                            eq("group", group)
+                            eq("date", date.toString()) // Convert date to string for the query
+                            eq("lessonNumber", lessonNumber)
+                        }
+                    }.decodeList<Note>() // Decode the response as a list of notes
 
-                onResult(notes) // Возвращаем отфильтрованный список через callback
-            } catch (e: Exception) {
-                e.printStackTrace()
-                onResult(emptyList()) // Возвращаем пустой список в случае ошибки
+                    emit(notes) // Emit the notes to the Flow
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    //emit(emptyList()) // Emit an empty list in case of an error
+                }
+                delay(700) // Wait for 2 seconds before fetching again
             }
         }
     }
@@ -55,12 +55,13 @@ class NoteViewModel : ViewModel() {
     fun deleteNote(noteId: String) {
         viewModelScope.launch {
             try {
-                val result = supabaseHelper.base.from("notes").delete { filter { eq("id", noteId) }}
+                val result = supabaseHelper.base.from("notes").delete { filter { eq("id", noteId) } }
             } catch (e: Exception) {
                 e.printStackTrace()
             }
         }
     }
+
     // Function to save the note to Supabase
     @OptIn(ExperimentalUuidApi::class)
     fun saveNote(
@@ -77,39 +78,47 @@ class NoteViewModel : ViewModel() {
     ) {
         viewModelScope.launch {
             try {
-                // Use the JWT token for the request
-                println(
-                    mapOf(
-                        "id" to Uuid.random().toString(),
-                        "created_at" to note.created_at,
-                        "lessonNumber" to note.lessonNumber,
-                        "date" to note.date.toString(),
-                        "text" to note.text,
-                        "user_uuid" to supabaseHelper.base.auth.retrieveUser(
-                            supabaseHelper.base.auth.currentAccessTokenOrNull()
-                                .toString()
-                        ).id,  // Or pass the user UUID if required
-                        "group" to note.group,
-                        "title" to note.title
-                    ).toString()
-                )
-                val result = supabaseHelper.base.from("notes").insert(
-                    Note(
-                        Uuid.random().toString(), note.created_at, note.lessonNumber, note.date, note.text,
-                        supabaseHelper.base.auth.retrieveUser(
-                            supabaseHelper.base.auth.currentAccessTokenOrNull().toString()
-                        ).id,
-                        note.group, note.title
-                    )
-                ).decodeList<Note>() // Using decodeList if you expect an array
-                if (result.isNotEmpty()) {
-                    println("Note added successfully")
-                } else {
-                    println("No result returned")
-                }
-                println(result) // Log the response to inspect it
-                // Handle result (e.g., success message or further processing)
+                val newNoteId = if (note.id.isBlank()) Uuid.random().toString() else note.id
+                val userUuid = supabaseHelper.base.auth.retrieveUser(
+                    supabaseHelper.base.auth.currentAccessTokenOrNull().toString()
+                ).id // Retrieve the user UUID
 
+                // Check if the note already exists with the same group, date, and lesson number
+                val existingNote = supabaseHelper.base.from("notes").select {
+                    filter {
+                        eq("group", note.group)
+                        eq("date", note.date.toString()) // Convert date to string
+                        eq("lessonNumber", note.lessonNumber)
+                    }
+                }.decodeList<Note>().firstOrNull()
+
+                if (existingNote != null) {
+                    // If the note exists, update it
+                    val updatedResult = supabaseHelper.base.from("notes").update(
+                        Note(
+                            newNoteId, note.created_at, note.lessonNumber, note.date, note.text,
+                            userUuid, note.group, note.title
+                        )
+                    )
+                    {
+                        filter {
+                            eq("id", existingNote.id)
+                        }
+                    }
+                } else {
+                    val result = supabaseHelper.base.from("notes").upsert(
+                        Note(
+                            newNoteId, note.created_at, note.lessonNumber, note.date, note.text,
+                            userUuid, note.group, note.title
+                        )
+                    ).decodeList<Note>()
+
+                    if (result.isNotEmpty()) {
+                        println("Note added successfully")
+                    } else {
+                        println("No result returned")
+                    }
+                }
             } catch (e: Exception) {
                 e.printStackTrace()
             }
