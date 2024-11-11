@@ -4,6 +4,7 @@ import androidx.compose.animation.Crossfade
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyListState
@@ -80,30 +81,33 @@ fun CalendarSlider(
             listState.scrollToItem(currentIndex)  // Scroll to the current date
         }
     }
-
-    Column {
-        Header(
-            displayedMonth = displayedMonth,
-            weekInMonth = weekInMonth,
-            onPrevClick = {
-                coroutineScope.launch {
-                    val targetIndex = (listState.firstVisibleItemIndex - 7).coerceAtLeast(0)
-                    listState.animateScrollToItem(targetIndex)
+    Box(Modifier.background(MaterialTheme.colorScheme.surfaceContainerLow).fillMaxWidth()) //TODO: Беспонтоыве поля
+    {
+        Column(Modifier.background(MaterialTheme.colorScheme.surfaceContainerLow).fillMaxWidth()) {
+            Header(
+                displayedMonth = displayedMonth,
+                weekInMonth = weekInMonth,
+                onPrevClick = {
+                    coroutineScope.launch {
+                        val targetIndex = (listState.firstVisibleItemIndex - 7).coerceAtLeast(0)
+                        listState.animateScrollToItem(targetIndex)
+                    }
+                },
+                onNextClick = {
+                    coroutineScope.launch {
+                        val targetIndex =
+                            (listState.firstVisibleItemIndex + 7).coerceAtMost(calendarUiModel.visibleDates.size - 1)
+                        listState.animateScrollToItem(targetIndex)
+                    }
                 }
-            },
-            onNextClick = {
-                coroutineScope.launch {
-                    val targetIndex = (listState.firstVisibleItemIndex + 7).coerceAtMost(calendarUiModel.visibleDates.size - 1)
-                    listState.animateScrollToItem(targetIndex)
-                }
-            }
-        )
-        Content(
-            data = calendarUiModel,
-            selectedDate = selectedDate!!,
-            onDateSelected = { selectedDate = it; viewModel.onDateSelected(it) },
-            listState = listState
-        )
+            )
+            Content(
+                data = calendarUiModel,
+                selectedDate = selectedDate!!,
+                onDateSelected = { selectedDate = it; viewModel.onDateSelected(it) },
+                listState = listState
+            )
+        }
     }
 }
 
@@ -125,7 +129,7 @@ fun Header(
     val monthDisplayName = displayedMonth.getDisplayNameInRussian()
     val headerText = monthDisplayName.capitalize()
 
-    Row(modifier = Modifier.fillMaxWidth()) {
+    Row(modifier = Modifier.fillMaxWidth().padding(6.dp)) {
         Crossfade(targetState = headerText) { text ->
             Text(
                 text = "$text",
@@ -136,19 +140,22 @@ fun Header(
                 fontSize = 35.sp
             )
         }
-        IconButton(onClick = onPrevClick) {
-            Icon(
-                imageVector = Icons.Filled.KeyboardArrowLeft,
-                contentDescription = "Назад",
-                tint = MaterialTheme.colorScheme.onBackground
-            )
-        }
-        IconButton(onClick = onNextClick) {
-            Icon(
-                imageVector = Icons.Filled.KeyboardArrowRight,
-                contentDescription = "Вперед",
-                tint = MaterialTheme.colorScheme.onBackground
-            )
+        Row(modifier = Modifier.weight(1f)) //TODO: Кнопки на правой части экрана
+        {
+            IconButton(onClick = onPrevClick) {
+                Icon(
+                    imageVector = Icons.Filled.KeyboardArrowLeft,
+                    contentDescription = "Назад",
+                    tint = MaterialTheme.colorScheme.onBackground
+                )
+            }
+            IconButton(onClick = onNextClick) {
+                Icon(
+                    imageVector = Icons.Filled.KeyboardArrowRight,
+                    contentDescription = "Вперед",
+                    tint = MaterialTheme.colorScheme.onBackground
+                )
+            }
         }
     }
 }
@@ -195,19 +202,18 @@ fun ContentItem(
 ) {
     // Animate the color transition based on the selection state for the container
     val containerColor by animateColorAsState(
-        targetValue = if (isSelected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.tertiaryContainer
+        targetValue = if (isSelected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant
     )
 
     // Animate the shape's corner size based on selection state
     val shapeCornerSize by animateDpAsState(
-        targetValue = if (isSelected) 16.dp else 4.dp
+        targetValue = if (isSelected) 40.dp else 15.dp
     )
 
     // Animate the text color change when the item is selected or not
     val textColor by animateColorAsState(
-        targetValue = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onTertiaryContainer
+        targetValue = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
     )
-
     Card(
         modifier = Modifier
             .padding(vertical = 4.dp, horizontal = 4.dp)
@@ -215,7 +221,7 @@ fun ContentItem(
             .animateContentSize(), // Smooth animation for any content size changes
         shape = RoundedCornerShape(shapeCornerSize),
         colors = CardDefaults.cardColors(containerColor = containerColor),
-        elevation = if (isSelected) CardDefaults.elevatedCardElevation(6.dp) else CardDefaults.elevatedCardElevation(0.dp)
+        elevation = if (isSelected) CardDefaults.elevatedCardElevation(4.dp) else CardDefaults.elevatedCardElevation(0.dp)
     ) {
         Column(
             modifier = Modifier

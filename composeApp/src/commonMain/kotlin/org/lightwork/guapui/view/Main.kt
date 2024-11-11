@@ -23,6 +23,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import guapui.composeapp.generated.resources.Res
 import guapui.composeapp.generated.resources.SualBar
+import guapui.composeapp.generated.resources.guap_calendar
 import org.jetbrains.compose.resources.painterResource
 import org.lightwork.guapui.elements.ExpandableGroupField
 import org.lightwork.guapui.models.Group
@@ -50,7 +51,7 @@ fun ScheduleAppBar(
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .background(MaterialTheme.colorScheme.primaryContainer)
+            .background(MaterialTheme.colorScheme.surfaceContainerLowest)
             .padding(8.dp)
     ) {
         Row(
@@ -68,7 +69,7 @@ fun ScheduleAppBar(
 
             if (currentScreen.title == "SuaiUI") {
                 Image(
-                    painter = painterResource(Res.drawable.SualBar),
+                    painter = painterResource(Res.drawable.guap_calendar),
                     contentDescription = "SuaiUI Logo",
                     modifier = Modifier
                         .padding(4.dp)

@@ -1,5 +1,6 @@
 package org.lightwork.guapui
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
@@ -54,6 +55,16 @@ fun LessonEntry(
     var isDialogOpen by remember { mutableStateOf(false) }
     val authStatus by authViewModel.authStatus.collectAsState()
 
+    val teritaryChipColor = ChipColors(MaterialTheme.colorScheme.tertiaryContainer, MaterialTheme.colorScheme.onTertiaryContainer,
+        MaterialTheme.colorScheme.tertiary, MaterialTheme.colorScheme.tertiary, MaterialTheme.colorScheme.surfaceDim, MaterialTheme.colorScheme.onSurfaceVariant, MaterialTheme.colorScheme.onSurfaceVariant, MaterialTheme.colorScheme.onSurfaceVariant)
+
+    val secondaryChipColors = ChipColors(MaterialTheme.colorScheme.secondaryContainer, MaterialTheme.colorScheme.onSecondaryContainer,
+        MaterialTheme.colorScheme.secondary, MaterialTheme.colorScheme.secondary, MaterialTheme.colorScheme.surfaceDim, MaterialTheme.colorScheme.onSurfaceVariant, MaterialTheme.colorScheme.onSurfaceVariant, MaterialTheme.colorScheme.onSurfaceVariant)
+
+    val primaryChipColors = ChipColors(MaterialTheme.colorScheme.primaryContainer, MaterialTheme.colorScheme.onPrimaryContainer,
+        MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.onPrimaryContainer, MaterialTheme.colorScheme.surfaceDim, MaterialTheme.colorScheme.onSurfaceVariant, MaterialTheme.colorScheme.onSurfaceVariant, MaterialTheme.colorScheme.onSurfaceVariant)
+
+
     if (authStatus == AuthStatus.AUTHENTICATED) {
         LaunchedEffect(calendarViewModel.selectedDate, lesson.number, scheduleViewModel.selectedGroupId) {
             calendarViewModel.selectedDate?.let { date ->
@@ -79,71 +90,70 @@ fun LessonEntry(
     Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(top = 2.dp, start = 4.dp, end = 4.dp)
-            .background(MaterialTheme.colorScheme.surfaceContainer)
+            .background(MaterialTheme.colorScheme.surface)
     ) {
-        Column(Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surfaceContainer)) {
+        Column(Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surface)) {
             Row(
                 Modifier
                     .fillMaxWidth()
-                    .background(MaterialTheme.colorScheme.surfaceContainer),
+                    .padding(8.dp)
+                    .background(MaterialTheme.colorScheme.surface),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Box(
-                    modifier = Modifier
-                        .background(MaterialTheme.colorScheme.surfaceContainer)
-                        .padding(4.dp)
-                        .padding(start = 8.dp, end = 8.dp)
-                        .size(24.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    if (lesson.donePercentage != null) {
-                        val progress = (lesson.donePercentage ?: 100) / 100f
-                        Box(
-                            contentAlignment = Alignment.Center,
-                            modifier = Modifier.size(24.dp)
-                        ) {
-                            CircularProgressIndicator(
-                                progress = 1f,
-                                modifier = Modifier.size(24.dp),
-                                color = MaterialTheme.colorScheme.onPrimary,
-                                strokeWidth = 2.dp,
-                            )
-                            CircularProgressIndicator(
-                                progress = progress,
-                                modifier = Modifier.size(24.dp),
-                                color = MaterialTheme.colorScheme.primary,
-                                strokeWidth = 2.dp,
-                            )
-                            Text(
-                                text = lesson.number.toString(),
-                                style = MaterialTheme.typography.labelLarge,
-                                color = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.align(Alignment.Center)
-                            )
-                        }
-                    } else {
-                        Box(
-                            modifier = Modifier
-                                .size(24.dp)
-                                .border(2.dp, MaterialTheme.colorScheme.primary, RoundedCornerShape(99.dp)),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = lesson.number.toString(),
-                                style = MaterialTheme.typography.labelLarge,
-                                color = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.align(Alignment.Center)
-                            )
-                        }
-                    }
-                }
+//                Box(
+//                    modifier = Modifier
+//                        .background(MaterialTheme.colorScheme.surfaceContainer)
+//                        .padding(4.dp)
+//                        .padding(start = 8.dp, end = 8.dp)
+//                        .size(24.dp),
+//                    contentAlignment = Alignment.Center
+//                ) {
+//                    if (lesson.donePercentage != null) {
+//                        val progress = (lesson.donePercentage ?: 100) / 100f
+//                        Box(
+//                            contentAlignment = Alignment.Center,
+//                            modifier = Modifier.size(24.dp)
+//                        ) {
+//                            CircularProgressIndicator(
+//                                progress = { 1f },
+//                                modifier = Modifier.size(24.dp),
+//                                color = MaterialTheme.colorScheme.onPrimary,
+//                                strokeWidth = 2.dp,
+//                            )
+//                            CircularProgressIndicator(
+//                                progress = { progress },
+//                                modifier = Modifier.size(24.dp),
+//                                color = MaterialTheme.colorScheme.primary,
+//                                strokeWidth = 2.dp,
+//                            )
+//                            Text(
+//                                text = lesson.number.toString(),
+//                                style = MaterialTheme.typography.labelLarge,
+//                                color = MaterialTheme.colorScheme.primary,
+//                                modifier = Modifier.align(Alignment.Center)
+//                            )
+//                        }
+//                    } else {
+//                        Box(
+//                            modifier = Modifier
+//                                .size(24.dp)
+//                                .border(2.dp, MaterialTheme.colorScheme.primary, RoundedCornerShape(99.dp)),
+//                            contentAlignment = Alignment.Center
+//                        ) {
+//                            Text(
+//                                text = lesson.number.toString(),
+//                                style = MaterialTheme.typography.labelLarge,
+//                                color = MaterialTheme.colorScheme.primary,
+//                                modifier = Modifier.align(Alignment.Center)
+//                            )
+//                        }
+//                    }
+//                }
 
                 Column(
                     modifier = Modifier
-                        .background(MaterialTheme.colorScheme.surfaceContainer)
-                        .padding(4.dp)
-                        .background(MaterialTheme.colorScheme.surfaceContainer)
+                        //.background(MaterialTheme.colorScheme.surfaceContainer)
+                        .padding(8.dp)
                         .fillMaxWidth()
                 ) {
                     if (lesson.remainingTime != null) {
@@ -155,14 +165,14 @@ fun LessonEntry(
                         ) {
                             Text(
                                 text = lesson.time,
-                                style = MaterialTheme.typography.bodySmall,
+                                style = MaterialTheme.typography.bodyLarge,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             lesson.remainingTime?.let {
                                 Text(
                                     text = it,
-                                    style = MaterialTheme.typography.bodySmall,
+                                    style = MaterialTheme.typography.bodyLarge,
                                     color = MaterialTheme.colorScheme.error,
                                     modifier = Modifier.weight(1f),
                                     textAlign = TextAlign.End
@@ -171,14 +181,14 @@ fun LessonEntry(
                         }
                     }
                     Text(
-                        text = lesson.lessonName,
+                        text = lesson.number.toString() + ". " + lesson.lessonName,
                         style = MaterialTheme.typography.bodyLarge,
-                        fontWeight = FontWeight.SemiBold,
+                        fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface
                     )
                     Text(
                         text = lesson.type,
-                        style = MaterialTheme.typography.bodySmall,
+                        style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
 
@@ -187,27 +197,15 @@ fun LessonEntry(
                         verticalArrangement = Arrangement.spacedBy(4.dp),
                         horizontalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
-                        lesson.teachers.forEach { teacher ->
-                            AssistChip(
-                                leadingIcon = {
-                                    Icon(
-                                        imageVector = Icons.Rounded.Person,
-                                        contentDescription = "Teacher icon",
-                                        tint = MaterialTheme.colorScheme.tertiary
-                                    )
-                                },
-                                onClick = {},
-                                label = { Text(teacher, color = MaterialTheme.colorScheme.onSurface) }
-                            )
-                        }
                         AssistChip(
-                            leadingIcon = {
-                                Icon(
-                                    imageVector = Icons.Rounded.Place,
-                                    contentDescription = "Place icon",
-                                    tint = MaterialTheme.colorScheme.tertiary
-                                )
-                            },
+                           colors = primaryChipColors,
+                            //                            leadingIcon = {
+//                                Icon(
+//                                    imageVector = Icons.Rounded.Place,
+//                                    contentDescription = "Place icon",
+//                                    tint = MaterialTheme.colorScheme.tertiary
+//                                )
+//                            },
                             onClick = {
                                 coroutineScope.launch {
                                     try {
@@ -233,19 +231,20 @@ fun LessonEntry(
                             label = {
                                 Text(
                                     lesson.room,
-                                    color = MaterialTheme.colorScheme.onSurface,
+                                    color = MaterialTheme.colorScheme.onPrimaryContainer,
                                     fontWeight = FontWeight.Bold
                                 )
                             }
                         )
                         AssistChip(
-                            leadingIcon = {
-                                Icon(
-                                    imageVector = Icons.Rounded.Home,
-                                    contentDescription = "Home icon",
-                                    tint = MaterialTheme.colorScheme.tertiary
-                                )
-                            },
+                            colors = teritaryChipColor,
+//                            leadingIcon = {
+//                                Icon(
+//                                    imageVector = Icons.Rounded.Home,
+//                                    contentDescription = "Home icon",
+//                                    tint = MaterialTheme.colorScheme.tertiary
+//                                )
+//                            },
                             onClick = {
                                 coroutineScope.launch {
                                     try {
@@ -268,15 +267,30 @@ fun LessonEntry(
                                     }
                                 }
                             },
-                            label = { Text(lesson.building, color = MaterialTheme.colorScheme.onSurface) }
+                            label = { Text(lesson.building, color = MaterialTheme.colorScheme.onTertiaryContainer) }
                         )
+                        lesson.teachers.forEach { teacher ->
+                            AssistChip(
+                               colors = teritaryChipColor,
+//                                leadingIcon = {
+//                                    Icon(
+//                                        imageVector = Icons.Rounded.Person,
+//                                        contentDescription = "Teacher icon",
+//                                        tint = MaterialTheme.colorScheme.tertiary
+//                                    )
+//                                },
+                                onClick = {},
+                                label = { Text(teacher, color = MaterialTheme.colorScheme.onTertiaryContainer) }
+                            )
+                        }
                         if (authStatus == AuthStatus.AUTHENTICATED) {
                             AssistChip(
+                                colors = secondaryChipColors,
                                 leadingIcon = {
                                     Icon(
                                         imageVector = if (hasNote) Icons.Rounded.MailOutline else Icons.Rounded.Add,
                                         contentDescription = null,
-                                        tint = MaterialTheme.colorScheme.tertiary
+                                        tint = MaterialTheme.colorScheme.primary
                                     )
                                               },
                                 onClick = {
@@ -290,12 +304,39 @@ fun LessonEntry(
                                           },
                                 label = {
                                     Text(
-                                        if (hasNote) "Прочитать" else "Добавить",
+                                        if (hasNote) "" else "",
                                         color = MaterialTheme.colorScheme.onSurface
                                     )
                                 }
                             )
                         }
+                    }
+
+                }
+            }
+            if (lesson.showBreak && lesson.breakTime != null) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth() // Reduce padding at the bottom
+                ) {
+                    HorizontalDivider(
+                        Modifier
+                            .fillMaxWidth()
+                            .align(Alignment.Center),
+                        thickness = 1.dp,
+                        color = MaterialTheme.colorScheme.outlineVariant
+                    )
+                    Card(border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline), modifier = Modifier.align(
+                        Alignment.Center), colors = CardColors(containerColor = MaterialTheme.colorScheme.surface, MaterialTheme.colorScheme.outline, MaterialTheme.colorScheme.outline, MaterialTheme.colorScheme.outline))
+                    {
+                        Text(
+                            text = lesson.breakTime ?: "",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier
+                                .padding(4.dp)
+                                .background(MaterialTheme.colorScheme.surface, shape = RoundedCornerShape(8.dp))
+                        )
                     }
                 }
             }

@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -24,13 +25,13 @@ fun DayCard(lessons: List<Lesson>?, label: String, navController: NavController,
         return
     }
 
-    Card(
-        Modifier.padding(8.dp).shadow(4.dp, shape = MaterialTheme.shapes.medium).background(MaterialTheme.colorScheme.surfaceContainer)
+    OutlinedCard(
+        Modifier.padding(8.dp).shadow(4.dp, shape = MaterialTheme.shapes.medium).background(MaterialTheme.colorScheme.surfaceContainerHighest)
     ) {
-        Column(Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surfaceContainer)) {
-            Row(Modifier.background(MaterialTheme.colorScheme.primary).fillMaxWidth().padding(8.dp)) {
-                Text(label, style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onPrimary)
-            }
+        Column(Modifier.fillMaxWidth()) {
+//            Row(Modifier.background(MaterialTheme.colorScheme.primary).fillMaxWidth().padding(8.dp)) {
+//                Text(label, style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onPrimary)
+//            }
             lessons.forEach {
                 LessonEntry(it, navController, mapViewmodel, scheduleViewModel, calendarViewModel, noteViewModel, authViewModel = authViewModel)
             }

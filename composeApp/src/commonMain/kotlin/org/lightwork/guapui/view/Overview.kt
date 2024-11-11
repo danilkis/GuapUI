@@ -68,7 +68,7 @@ fun Overview(
     // Filter lessons by the selected day name
     val filteredLessons = lessons?.filter { it.dayName == selectedDayName }
 
-    Column(Modifier.background(MaterialTheme.colorScheme.background)) {
+    Column(Modifier.background(MaterialTheme.colorScheme.surfaceContainer)) {
         // Splash screen visibility
         AnimatedVisibility(
             visible = isSplashScreenVisible,
