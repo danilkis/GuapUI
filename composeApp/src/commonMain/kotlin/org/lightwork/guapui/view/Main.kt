@@ -21,15 +21,14 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import guapui.composeapp.generated.resources.Res
-import guapui.composeapp.generated.resources.SualBar
-import guapui.composeapp.generated.resources.guap_calendar
 import org.jetbrains.compose.resources.painterResource
 import org.lightwork.guapui.elements.ExpandableGroupField
 import org.lightwork.guapui.helper.SupabaseHelper
 import org.lightwork.guapui.models.Group
 import org.lightwork.guapui.providers.SettingsProvider
 import org.lightwork.guapui.viewmodel.*
+import suai.ui.library.resources.Res
+import suai.ui.library.resources.guap_calendar
 
 enum class AppScreen(val title: String) {
     Main(title = "SuaiUI"),
@@ -39,7 +38,7 @@ enum class AppScreen(val title: String) {
 }
 
 @Composable
-fun ScheduleAppBar(
+expect fun ScheduleAppBar(
     currentScreen: AppScreen,
     canNavigateBack: Boolean,
     navigateUp: () -> Unit,
@@ -48,58 +47,7 @@ fun ScheduleAppBar(
     onGroupSelected: (Int) -> Unit,
     onNavigateToAccount: () -> Unit,
     modifier: Modifier = Modifier
-) {
-    Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .background(MaterialTheme.colorScheme.surfaceContainerLowest)
-            .padding(8.dp)
-    ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            if (canNavigateBack) {
-                IconButton(onClick = navigateUp) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = "Назад"
-                    )
-                }
-            }
-
-            if (currentScreen.title == "SuaiUI") {
-                Image(
-                    painter = painterResource(Res.drawable.guap_calendar),
-                    contentDescription = "SuaiUI Logo",
-                    modifier = Modifier
-                        .padding(4.dp)
-                        .size(70.dp)
-                )
-                groups?.let {
-                    ExpandableGroupField(
-                        items = it,
-                        label = "Группа",
-                        selectedGroupId = selectedGroupId,
-                        onItemSelected = { id -> onGroupSelected(id) }
-                    )
-                }
-                Spacer(modifier = Modifier.weight(1f))
-                IconButton(onClick = onNavigateToAccount) {
-                    Icon(
-                        imageVector = Icons.Filled.AccountCircle,
-                        contentDescription = "Account",
-                        modifier = Modifier
-                            .padding(4.dp)
-                            .size(90.dp)
-                    )
-                }
-            } else {
-                Text(currentScreen.title, style = MaterialTheme.typography.titleMedium)
-            }
-        }
-    }
-}
+)
 
 
 

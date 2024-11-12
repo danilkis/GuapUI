@@ -16,13 +16,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.unit.dp
-import guapui.composeapp.generated.resources.*
-import guapui.composeapp.generated.resources.Res
-import guapui.composeapp.generated.resources.beta
-import guapui.composeapp.generated.resources.guap_calendar
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
+import suai.ui.library.resources.Res
+import suai.ui.library.resources.apple
+import suai.ui.library.resources.beta
+import suai.ui.library.resources.guap_calendar
+import suai.ui.library.resources.notes
 
 // Основной экран онбординга с тремя страницами и уникальными SVG изображениями
 @OptIn(ExperimentalFoundationApi::class)
@@ -84,80 +85,24 @@ fun OnboardingScreen(onComplete: () -> Unit) {
 
 // Компоненты для страниц с уникальными SVG и текстом
 @Composable
-fun OnboardingPage1() {
-    OnboardingPageWithContent(
-        title = "Добро пожаловать!",
-        text = "SuaiUI — это простой инструмент для просмотра расписания, создания заметок и напоминаний для занятий.",
-        svgResource = Res.drawable.guap_calendar
-    )
-}
+expect fun OnboardingPage1()
 
 @Composable
-fun OnboardingPage2() {
-    OnboardingPageWithContent(
-        title = "Мы еще тестируемся",
-        text = "Этот сайт разрабатывается одним человеком и находится в стадии бета-тестирования. Если вы заметите ошибки или столкнулись с проблемами, пожалуйста, сообщите об этом в Telegram: @SuaiMultiplatform.",
-        svgResource = Res.drawable.beta,
-        iconTint = MaterialTheme.colorScheme.primary
-    )
-}
+expect fun OnboardingPage2()
 
 @Composable
-fun OnboardingPage3() {
-    OnboardingPageWithContent(
-        title = "Заметки",
-        text = "Функция добавления заметок к парам позволяет вам сохранять важную информацию, связанную с парами. Все заметки синхронизируются между устройствами, чтобы вы могли легко получить доступ к ним в любом месте. Для использования этой функции необходимо войти в аккаунт или создать новый.",
-        svgResource = Res.drawable.notes,
-        iconTint = MaterialTheme.colorScheme.secondary // Step 2: Set primary color as tint
-    )
-}
+expect fun OnboardingPage3()
 
 @Composable
-fun OnboardingPage4() {
-    OnboardingPageWithContent(
-        title = "iOS и Mac",
-        text = "Сайт работает на iOS и macOS (поддерживаются только последние бета-версии). Когда приложение будет полностью готово, мы сообщим об этом в Telegram. Спасибо за внимание и приятного пользования!",
-        svgResource = Res.drawable.apple,
-        iconTint = MaterialTheme.colorScheme.tertiary // Step 2: Set primary color as tint
-    )
-}
+expect fun OnboardingPage4()
+
 @Composable
-fun OnboardingPageWithContent(
+expect fun OnboardingPageWithContent(
     title: String,
     text: String,
-    svgResource: DrawableResource,
+    resource: DrawableResource,
     iconTint: Color? = null // Step 1: Add iconTint parameter
-) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(14.dp)
-            .background(MaterialTheme.colorScheme.background),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        Image(
-            painter = painterResource(svgResource),
-            contentDescription = "",
-            modifier = Modifier
-                .size(240.dp)
-                .padding(bottom = 16.dp),
-            colorFilter = iconTint?.let { ColorFilter.tint(it) } // Apply tint if provided
-        )
-        Text(
-            text = title,
-            style = MaterialTheme.typography.titleLarge,
-            color = MaterialTheme.colorScheme.onBackground
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-        Text(
-            text = text,
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onBackground,
-            modifier = Modifier.padding(horizontal = 16.dp)
-        )
-    }
-}
+)
 
 @Composable
 fun DotsIndicator(pageCount: Int, currentPage: Int, modifier: Modifier = Modifier) {

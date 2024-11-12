@@ -14,9 +14,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
-import guapui.composeapp.generated.resources.Guap_logo
-import guapui.composeapp.generated.resources.Res
 import org.jetbrains.compose.resources.painterResource
+import suai.ui.library.resources.Guap_logo
+import suai.ui.library.resources.Res
 
 @Composable
 fun SplashScreen() {
@@ -41,15 +41,15 @@ fun SplashScreen() {
             verticalArrangement = Arrangement.Center
         ) {
             // Uncomment the Image composable if you want to display the logo
-             Image(
-                 painter = painterResource(Res.drawable.Guap_logo),
-                 contentDescription = "GUAP Logo",
-                 modifier = Modifier
-                     .size(120.dp)
-                     .scale(scale),
-                 contentScale = ContentScale.Crop
-             )
-             Spacer(modifier = Modifier.height(24.dp))
+//             Image( TODO: Сделать под андроид
+//                 painter = painterResource(Res.drawable.Guap_logo),
+//                 contentDescription = "GUAP Logo",
+//                 modifier = Modifier
+//                     .size(120.dp)
+//                     .scale(scale),
+//                 contentScale = ContentScale.Crop
+//             )
+//             Spacer(modifier = Modifier.height(24.dp))
             LinearProgressIndicator(
                 modifier = Modifier
                     .width(350.dp)

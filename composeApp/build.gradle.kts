@@ -1,3 +1,4 @@
+import com.android.build.gradle.internal.ide.kmp.KotlinAndroidSourceSetMarker.Companion.android
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
@@ -78,7 +79,7 @@ kotlin {
 
         val wasmJsMain by getting {
             dependencies {
-                implementation("io.ktor:ktor-client-js-wasm-js:3.0.0-rc-1")
+                implementation(libs.ktor.client.js.wasm.js)
                 implementation("io.ktor:ktor-http-wasm-js:3.0.0-beta-2")
                 implementation("com.russhwolf:multiplatform-settings:1.2.0")
             }
@@ -86,6 +87,8 @@ kotlin {
 
         val androidMain by getting {
             dependencies {
+                implementation(libs.ktor.client.android)
+                implementation("com.russhwolf:multiplatform-settings:1.2.0")
                 runtimeOnly(libs.androidx.material.icons.extended)
                 implementation(libs.androidx.material.icons.extended)
                 implementation(compose.preview)
@@ -144,6 +147,12 @@ android {
 }
 dependencies {
     implementation(libs.places)
+}
+
+compose.resources {
+    publicResClass = false
+    packageOfResClass = "suai.ui.library.resources"
+    generateResClass = auto
 }
 
 compose.desktop {

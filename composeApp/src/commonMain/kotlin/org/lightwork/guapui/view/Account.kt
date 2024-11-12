@@ -20,13 +20,12 @@ import kotlinx.coroutines.launch
 import org.lightwork.guapui.viewmodel.AuthViewModel
 
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Gif
 import androidx.compose.material.icons.outlined.Warning
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import guapui.composeapp.generated.resources.Res
-import guapui.composeapp.generated.resources.github
 import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.auth.providers.Github
 import io.github.jan.supabase.auth.user.UserInfo
@@ -37,6 +36,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.jetbrains.compose.resources.painterResource
 import org.lightwork.guapui.viewmodel.AuthStatus
+import suai.ui.library.resources.Res
+import suai.ui.library.resources.github
 
 @OptIn(AuthUiExperimental::class, ExperimentalMaterial3Api::class)
 @Composable
@@ -192,13 +193,13 @@ fun AccountPage(
                 },
                 content = {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            painter = painterResource(Res.drawable.github),
-                            contentDescription = "GitHub",
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(30.dp)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
+//                        Icon(
+//                            painter = Icons.Outlined.Gif, //painterResource(Res.drawable.github)
+//                            contentDescription = "GitHub",
+//                            tint = MaterialTheme.colorScheme.primary,
+//                            modifier = Modifier.size(30.dp)
+//                        )
+//                        Spacer(modifier = Modifier.width(8.dp))
                         Text("Войти через GitHub")
                     }
                 }
